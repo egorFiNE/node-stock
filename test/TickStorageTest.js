@@ -1,13 +1,12 @@
 util = require('util');
 fs = require('fs');
 TickStorage = require('../lib/TickStorage');
-
-var dbPath = __dirname+ '/data';
+testCase = require('nodeunit').testCase;
 
 exports['basic read']= function(test) {
 	test.expect(4);
 	
-	var tickStorage = new TickStorage(dbPath, 'LVS', '20110104');
+	var tickStorage = new TickStorage(__dirname+ '/data', 'LVS', '20110104');
 	test.ok(tickStorage.load());
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
@@ -31,7 +30,7 @@ exports['basic create'] = function(test) {
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
 	
-	var tickStorage = new TickStorage('/tmp/', 'AAAA', day.daystamp());
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.prepareForNew();
 	
 	tickStorage.addTick(unixtime-10, 100, 1000000, false);
@@ -42,7 +41,7 @@ exports['basic create'] = function(test) {
 	
 	test.ok(tickStorage.save());
 	
-	tickStorage = new TickStorage('/tmp/', 'AAAA', day.daystamp());
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	test.ok(tickStorage.load());
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
@@ -67,6 +66,9 @@ exports['basic create'] = function(test) {
 		c: 990000
 	})
 	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
 	test.done();
 }
 
@@ -76,7 +78,7 @@ exports['create huge'] = function(test) {
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
 	
-	var tickStorage = new TickStorage('/tmp/', 'BBBB', day.daystamp());
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.prepareForNew();
 	
 	var i=0;
@@ -86,7 +88,7 @@ exports['create huge'] = function(test) {
 	
 	test.ok(tickStorage.save());
 	
-	tickStorage = new TickStorage('/tmp/', 'BBBB', day.daystamp());
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	test.ok(tickStorage.load());
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
@@ -103,6 +105,9 @@ exports['create huge'] = function(test) {
 	test.equal(totalVolume, 100*10000, 'total volume');
 	test.equal(totalCount, 10000, 'total count');
 	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
 	test.done();
 }
 
@@ -112,7 +117,7 @@ exports['rewind'] = function(test) {
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
 	
-	var tickStorage = new TickStorage('/tmp/', 'CCCC', day.daystamp());
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.prepareForNew();
 	
 	tickStorage.addTick(unixtime-10, 100, 1, false);
@@ -123,7 +128,7 @@ exports['rewind'] = function(test) {
 	
 	tickStorage.save();
 	
-	tickStorage = new TickStorage('/tmp/', 'CCCC', day.daystamp());
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.load();
 	
 	var tick;
@@ -160,7 +165,10 @@ exports['rewind'] = function(test) {
 	tickStorage.rewind(100);
 	tick = tickStorage.nextTick();
 	test.equal(tick.price, 1);
-	
+
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+
 	test.done();
 }
 
@@ -187,6 +195,9 @@ exports['create zero tick'] = function(test) {
 		c: null
 	})
 	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
 	test.done();
 }
 
@@ -205,25 +216,25 @@ exports['non-existing'] = function(test) {
 
 exports['market data'] = function(test) {
 	test.expect(8);
-	
+
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
-	
+
 	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.prepareForNew();
-	
+
 	tickStorage.addTick(unixtime-10, 100, 1, false);
 	tickStorage.addTick(unixtime-9,  100, 2, true);
 	tickStorage.addTick(unixtime-8,  100, 3, true);
 	tickStorage.addTick(unixtime-7,  100, 4, true);
 	tickStorage.addTick(unixtime-6,  500, 5, true);
 	tickStorage.addTick(unixtime-5,  500, 6, false);
-	
+
 	test.equal(tickStorage.marketHigh, 5);
 	test.equal(tickStorage.marketLow,  2);
 	test.equal(tickStorage.marketOpenPos,  1);
 	test.equal(tickStorage.marketClosePos,  4);
-	
+
 	tickStorage.save();
 
 	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
@@ -234,5 +245,9 @@ exports['market data'] = function(test) {
 	test.equal(tickStorage.marketOpenPos,  1);
 	test.equal(tickStorage.marketClosePos,  4);
 
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
 	test.done();
-}
+};
+
