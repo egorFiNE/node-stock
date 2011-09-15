@@ -1,6 +1,6 @@
 util = require('util');
 fs = require('fs');
-TickStorage = require('../lib/TickStorage').TickStorage;
+TickStorage = require('../lib/TickStorage');
 
 var dbPath = __dirname+ '/data';
 
