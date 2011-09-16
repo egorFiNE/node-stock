@@ -1,12 +1,11 @@
 util = require('util');
 fs = require('fs');
 TickStorage = require('../lib/TickStorage');
-testCase = require('nodeunit').testCase;
 
 exports['basic read']= function(test) {
 	test.expect(4);
 	
-	var tickStorage = new TickStorage(__dirname+ '/data', 'LVS', '20110104');
+	var tickStorage = new TickStorage(__dirname+ '/data/ticks-correct', 'LVS', '20110104');
 	test.ok(tickStorage.load());
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
@@ -25,13 +24,14 @@ exports['basic read']= function(test) {
 }
 
 exports['basic create'] = function(test) {
-	test.expect(6);
+	test.expect(7);
 	
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
 	
 	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.prepareForNew();
+	tickStorage.additionalData.adolf="hitler";
 	
 	tickStorage.addTick(unixtime-10, 100, 1000000, false);
 	tickStorage.addTick(unixtime-9,  100, 1000000, true);
@@ -43,6 +43,8 @@ exports['basic create'] = function(test) {
 	
 	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	test.ok(tickStorage.load());
+	
+	test.equal(tickStorage.additionalData.adolf, "hitler");
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
 
@@ -215,7 +217,7 @@ exports['non-existing'] = function(test) {
 }
 
 exports['market data'] = function(test) {
-	test.expect(8);
+	test.expect(12);
 
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
@@ -229,25 +231,62 @@ exports['market data'] = function(test) {
 	tickStorage.addTick(unixtime-7,  100, 4, true);
 	tickStorage.addTick(unixtime-6,  500, 5, true);
 	tickStorage.addTick(unixtime-5,  500, 6, false);
+	
+	var hloc = tickStorage.getHloc();
 
-	test.equal(tickStorage.marketHigh, 5);
-	test.equal(tickStorage.marketLow,  2);
+	test.equal(hloc.h, 5);
+	test.equal(hloc.l, 2);
+	test.equal(hloc.o, 2);
+	test.equal(hloc.c, 5);
 	test.equal(tickStorage.marketOpenPos,  1);
-	test.equal(tickStorage.marketClosePos,  4);
+	test.equal(tickStorage.marketClosePos, 4);
 
 	tickStorage.save();
 
 	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.load();
 
-	test.equal(tickStorage.marketHigh, 5);
-	test.equal(tickStorage.marketLow,  2);
+	hloc = tickStorage.getHloc();
+
+	test.equal(hloc.h, 5);
+	test.equal(hloc.l, 2);
+	test.equal(hloc.o, 2);
+	test.equal(hloc.c, 5);
 	test.equal(tickStorage.marketOpenPos,  1);
-	test.equal(tickStorage.marketClosePos,  4);
+	test.equal(tickStorage.marketClosePos, 4);
 
 	tickStorage.remove();
 	fs.rmdirSync('/tmp/DDDD/');
 	
+	test.done();
+};
+
+
+exports['invalid data'] = function(test) {
+	test.expect(5);
+
+	var tickStorage; 
+	
+	// too new version
+	tickStorage = new TickStorage(__dirname+ '/data/ticks-invalid', 'LVS', '20100614');
+	test.ok(!tickStorage.load());
+
+	// invalid compressed data
+	tickStorage = new TickStorage(__dirname+ '/data/ticks-invalid', 'LVS', '20100615');
+	test.ok(!tickStorage.load());
+
+	// invalid minute index data
+	tickStorage = new TickStorage(__dirname+ '/data/ticks-invalid', 'LVS', '20100616');
+	test.ok(!tickStorage.load());
+
+	// invalid JSON header but larger than headersize
+	tickStorage = new TickStorage(__dirname+ '/data/ticks-invalid', 'LVS', '20100617');
+	test.ok(!tickStorage.load());
+
+	// invalid JSON header smaller than headersize
+	tickStorage = new TickStorage(__dirname+ '/data/ticks-invalid', 'LVS', '20100618');
+	test.ok(!tickStorage.load());
+
 	test.done();
 };
 
