@@ -5,7 +5,7 @@ require('../lib/WorkingDays');
 exports['check nyse working days'] = function(test) {
 	process.env.TZ='America/New_York';
 	
-	test.expect(6);
+	test.expect(7);
 	
 	var day;
 
@@ -22,6 +22,9 @@ exports['check nyse working days'] = function(test) {
 
 	day = Date.parseDaystamp('20110906'); // working day
 	test.ok(!WorkingDays.isNyseHoliday(day));
+
+	day = Date.parseDaystamp('20100118'); // holiday
+	test.ok(WorkingDays.isNyseHoliday(day));
 
 	test.done();
 }
@@ -55,4 +58,3 @@ exports['check nyse prev/next day'] = function(test) {
 	
 	test.done();
 }
-
