@@ -74,6 +74,89 @@ exports['basic create'] = function(test) {
 	test.done();
 }
 
+exports['set incorrect unixtime'] = function(test) {
+	test.expect(5);
+	
+	var day = new Date();
+	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
+	
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+	
+	tickStorage.addTick(unixtime-1, 100, 1000000, true);
+	tickStorage.addTick(unixtime,   100, 1000000, true);
+	tickStorage.addTick(123, 100, 1000000, true); // incorrect unixtime
+	
+	test.ok(tickStorage.save());
+	
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	test.ok(tickStorage.load());
+	
+	var totalVolume=0, totalPrice=0, totalCount=0;
+
+	var tick;
+	while ((tick = tickStorage.nextTick())) {
+		if (tick.isMarket) {
+			totalVolume+=tick.volume;
+			totalPrice+=tick.price;
+			totalCount++;
+		}
+	}
+	
+	test.equal(totalVolume, 200, 'total volume');
+	test.equal(totalPrice, 2000000, 'total price');
+	test.equal(totalCount, 2, 'total count');
+	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
+	test.done();
+}
+
+exports['non-sequential unixtime'] = function(test) {
+	test.expect(7);
+	
+	var day = new Date();
+	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
+	
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+	
+	tickStorage.addTick(unixtime+1, 100, 1000000, true);
+	tickStorage.addTick(unixtime-1, 100, 1000000, true);
+	
+	test.ok(tickStorage.save());
+	
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	test.ok(tickStorage.load());
+	
+	var totalVolume=0, totalPrice=0, totalCount=0;
+
+	var tick;
+	while ((tick = tickStorage.nextTick())) {
+		if (tick.isMarket) {
+			totalVolume+=tick.volume;
+			totalPrice+=tick.price;
+			totalCount++;
+		}
+	}
+	
+	test.equal(totalVolume, 200, 'total volume');
+	test.equal(totalPrice, 2000000, 'total price');
+	test.equal(totalCount, 2, 'total count');
+	
+	tickStorage.rewind();
+	tick = tickStorage.nextTick();
+	test.equal(tick.unixtime, unixtime+1);
+	tick = tickStorage.nextTick();
+	test.equal(tick.unixtime, unixtime-1);
+	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
+	test.done();
+}
+
 exports['create huge'] = function(test) {
 	test.expect(4);
 	
@@ -289,4 +372,3 @@ exports['invalid data'] = function(test) {
 
 	test.done();
 };
-
