@@ -1,51 +1,58 @@
 #!/usr/bin/env node
 
-var program = require('commander');
 require('node-date');
-require(__dirname+'/../lib/ExtraDate.js');
-TickStorage = require(__dirname+'/../lib/TickStorage').TickStorage;
+require(__dirname+'/../lib/ExtraDate');
+require(__dirname+'/../lib/ExtraNumber');
+TickStorage = require(__dirname+'/../lib/TickStorage');
 
-function humanReadablePrice(price) {
-	return (price/10000).toFixed(2);
-}
+process.env.TZ='America/New_York';
 
-program
-	.option('-s, --symbol [symbol]', 'symbol')
-	.option('-p, --dbpath [dbpath]', 'database path')
-	.option('-d, --day [date]', 'day to dump')
-	.option('-m, --market', 'only market')
-	.parse(process.argv);
+argv = require('optimist')
+	.options('symbol', {
+		demand: true
+	})
+	.options('dbpath', {
+		demand: true
+	})
+	.options('day', {
+		demand: true
+	})
+	.options('market', {
+		'boolean': true,
+		describe: 'show only market ticks'
+	})
+	.argv;
 
-if (!program.dbpath || !program.symbol || !program.day) {
+if (!argv.dbpath || !argv.symbol || !argv.day) {
 	console.log("Wrong usage. Ask --help ?")
 	return;
 } 
 
-var tickStorage = new TickStorage(program.dbpath, program.symbol, program.day);
+var tickStorage = new TickStorage(argv.dbpath, argv.symbol, argv.day);
 tickStorage.load();
 
 var hloc = tickStorage.getHloc();
 console.log("High = %s Low = %s Open = %s Close = %s", 
-	humanReadablePrice(hloc.h),
-	humanReadablePrice(hloc.l),
-	humanReadablePrice(hloc.o),
-	humanReadablePrice(hloc.c)
+	hloc.h.humanReadablePrice(),
+	hloc.l.humanReadablePrice(),
+	hloc.o.humanReadablePrice(),
+	hloc.c.humanReadablePrice()
 );
 
 var totalVolume=0, totalPrice=0, count=0;
 var entry;
 while ((entry = tickStorage.nextTick())) {
 	count++;
-	if (program.market && !entry.isMarket) { 
+	if (argv.market && !entry.isMarket) { 
 		continue;
 	}
 	totalVolume+=entry.volume;
 	totalPrice+=entry.price;
 	var d = Date.parseUnixtime(entry.unixtime).toFormat('YYYYMMDD HH24:MI:SS');
 	console.log("[%d] %s: %s @ %s %s",
-		count, d, entry.volume, humanReadablePrice(entry.price), 
+		count, d, entry.volume, entry.price.humanReadablePrice(), 
 		entry.isMarket?"":"(aftermarket)"
 	);
 }
 
-console.log("Total volume = %d, total price = %d", totalVolume, humanReadablePrice(totalPrice));
+console.log("Total volume = %d, total price = %d", totalVolume, totalPrice.humanReadablePrice());
