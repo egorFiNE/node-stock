@@ -3,7 +3,7 @@
 	"description": "node-stock",
 	"version": "0.0.2",
 	"author": "Egor Egorov <me@egorfine.com>",
-	"homepage": "http://egorfine.github.com/node-stock,
+	"homepage": "http://egorfine.github.com/node-stock",
 	"bugs": { 
 		"web": "http://github.com/egorFiNE/node-stock/issues" 
 	},
