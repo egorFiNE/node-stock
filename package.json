@@ -1,11 +1,19 @@
 {
-  "author": "Egor Egorov <me@egorfine.com>",
-  "name": "stock",
-  "description": "node-stock",
-  "version": "0.0.2",
-  "repository": {
-    "url": ""
-  },
-  "dependencies": {},
-  "devDependencies": {}
+	"name": "stock",
+	"description": "node-stock",
+	"version": "0.0.2",
+	"author": "Egor Egorov <me@egorfine.com>",
+	"homepage": "http://egorfine.github.com/node-stock,
+	"bugs": { 
+		"web": "http://github.com/egorFiNE/node-stock/issues" 
+	},
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/egorfine/node-stock.git"
+	},
+	"dependencies": { 
+		"compress-buffer": ">= 0.4.0",
+		"node-date": ">= 0.0.1"
+	},
+	"devDependencies": {}
 }
