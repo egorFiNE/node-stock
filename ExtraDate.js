@@ -57,3 +57,8 @@ Date.prototype.getDayName = function() {
 Date.prototype.getCurrentDayMinute = function() {
 	return this.getHours()*60 + this.getMinutes();
 }
+
+Date.prototype.isNyseMarketTime = function() {
+	var m = this.getCurrentDayMinute();
+	return (m>=570 && m<960)
+}

@@ -15,6 +15,7 @@ exports['check parse daystamp'] = function(test) {
 };
 
 exports['get current day minute'] = function(test) {
+	test.expect(3);
 	
 	var day = new Date();
 	
@@ -27,5 +28,34 @@ exports['get current day minute'] = function(test) {
 	day.setHours(23,59,59,0);
 	test.equal(day.getCurrentDayMinute(), 1440-1);
 
+	test.done();
+}
+
+exports['nyse market time'] = function(test) {
+	test.expect(7);
+	
+	var day = new Date();
+	
+	day.setHours(10, 52, 46, 0);
+	test.ok(day.isNyseMarketTime());
+
+	day.setHours(9, 30, 0, 0);
+	test.ok(day.isNyseMarketTime());
+
+	day.setHours(9, 29, 0, 0);
+	test.ok(!day.isNyseMarketTime());
+
+	day.setHours(9, 29, 59, 0);
+	test.ok(!day.isNyseMarketTime());
+
+	day.setHours(15, 59, 59, 0);
+	test.ok(day.isNyseMarketTime());
+
+	day.setHours(16, 0, 0, 0);
+	test.ok(!day.isNyseMarketTime());
+
+	day.setHours(0, 0, 0, 0);
+	test.ok(!day.isNyseMarketTime());
+	
 	test.done();
 }
