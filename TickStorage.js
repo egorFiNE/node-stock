@@ -13,38 +13,69 @@ function MinuteIndex() {
 		this.index[m]=null;
 	}
 	
-	this.ticksCount=0;
-	this.startUnixtime = null;
+	this.position=-1;
+	this._startUnixtime = null;
 	
-	this.lastMinute=-1;
+	this._lastMinute=-1;
+	this._lastUnixtime=-1;
 }
 
 MinuteIndex.prototype.setStartUnixtime = function(unixtime) {
-	this.startUnixtime = unixtime;
+	this._startUnixtime = unixtime;
+	this._lastUnixtime = unixtime;
 }
 
-MinuteIndex.prototype.addTick = function(unixtime, price) {
-	var minute = Math.floor((unixtime-this.startUnixtime)/60);
+MinuteIndex.prototype.addTick = function(unixtime, volume, price, isMarket) {
+	this.position++;
+	
+	// we shall ignore correctional ticks from the past as they don't change anything and don't belong to the minute
+	if (unixtime<this._lastUnixtime) {
+		return; 
+	}
+	
+	var minute = Math.floor((unixtime-this._startUnixtime)/60);
+	//util.debug("adding min = "+minute);
+	
 	if (minute>=1440) {
 		/*
-		console.log("Cannot add minute %d, which is at %s with starting unixtime %s", minute, 
-			Date.parseUnixtime(unixtime), Date.parseUnixtime(this.startUnixtime));
+		util.debug("Cannot add minute %d, which is at %s with starting unixtime %s", minute, 
+			Date.parseUnixtime(unixtime), Date.parseUnixtime(this._startUnixtime));
 		*/
 		return;  // FIXME or what else?
 	}
+	
 	if (this.index[minute]===null) {
 		this.index[minute]={
-			p: this.ticksCount,
-			h: Number.MIN_VALUE,
-			l: Number.MAX_VALUE
+			p: this.position,
+			v: 0,
+			h: null,
+			l: null
 		};
 	}
+
+	this._lastMinute = minute;
+	this._lastUnixtime = unixtime;
 	
-	this.index[minute].h = Math.max(this.index[minute].h, price);
-	this.index[minute].l = Math.min(this.index[minute].l, price);
+	// we shall ignore aftermarket prices for the price index.
+	if (!isMarket) {
+		return; 
+	}
 	
-	this.lastMinute = minute;
-	this.ticksCount++;
+	this.index[minute].v+=volume;
+
+	if (this.index[minute].h === null) {
+		this.index[minute].h = price;
+	} else { 
+		this.index[minute].h = Math.max(this.index[minute].h, price);
+	}
+	
+	if (this.index[minute].l === null) {
+		this.index[minute].l = price;
+	} else { 
+		this.index[minute].l = Math.min(this.index[minute].l, price);
+	}
+	// util.debug(minute+ " = " + util.inspect(this.index[minute]));
+
 }
 
 MinuteIndex.prototype.toGzip = function() {
@@ -68,21 +99,21 @@ MinuteIndex.prototype.fromGzip = function(buffer) {
 
 
 function TickStorage(dbPath, symbol, daystamp) { 
-	this.dbPath = dbPath;
-	this.symbol = symbol;
+	this._dbPath = dbPath;
+	this._symbol = symbol;
 
-	this.daystamp = daystamp;
+	this._daystamp = daystamp;
 
-	var day = Date.parseDaystamp(this.daystamp);
-	this.startUnixtime = day.unixtime();
+	var day = Date.parseDaystamp(this._daystamp);
+	this._startUnixtime = day.unixtime();
 	
-	this.path = dbPath+'/'+symbol+'/';
-	this.filename = this.path+this.daystamp+'.ticks';
+	this._path = dbPath+'/'+symbol+'/';
+	this._filename = this._path+this._daystamp+'.ticks';
 	
-	this.bufferData = null; 
+	this._bufferData = null; 
 	this.minuteIndex = null;
 	
-	this.offset=0;
+	this._offset=0;
 	this.countOfEntries=0;
 	
 	this.additionalData={};
@@ -93,38 +124,38 @@ TickStorage.ENTRY_SIZE=13;
 TickStorage.CURRENT_VERSION=1;
 
 TickStorage.prototype._buf2int = function(offset) {
-	return this.bufferData[0+offset] +
-		(this.bufferData[1+offset] << 8) +
-		(this.bufferData[2+offset] << 16) +
-		(this.bufferData[3+offset] << 24);
+	return this._bufferData[0+offset] +
+		(this._bufferData[1+offset] << 8) +
+		(this._bufferData[2+offset] << 16) +
+		(this._bufferData[3+offset] << 24);
 }
 
 TickStorage.prototype._int2buf = function(offset, num) {
-	this.bufferData[0+offset] = num;
-	this.bufferData[1+offset] = num >> 8;
-	this.bufferData[2+offset] = num >> 16;
-	this.bufferData[3+offset] = num >> 24;
+	this._bufferData[0+offset] = num;
+	this._bufferData[1+offset] = num >> 8;
+	this._bufferData[2+offset] = num >> 16;
+	this._bufferData[3+offset] = num >> 24;
 }
 
 TickStorage.prototype.exists = function() {
-	return path.existsSync(this.filename);
+	return path.existsSync(this._filename);
 }
 
 TickStorage.prototype.rewind = function(ticks) {
 	if (!ticks) {
-		this.offset=0;
+		this._offset=0;
 	} else { 
-		this.offset-=TickStorage.ENTRY_SIZE*ticks;
-		if (this.offset<0) {
-			this.offset=0;
+		this._offset-=TickStorage.ENTRY_SIZE*ticks;
+		if (this._offset<0) {
+			this._offset=0;
 		}
 	}
 }
 
 TickStorage.prototype._possiblyCreatePath = function() {
-	if (!path.existsSync(this.path)) { 
+	if (!path.existsSync(this._path)) { 
 		try {
-			fs.mkdirSync(this.path, 0755);
+			fs.mkdirSync(this._path, 0755);
 		} catch (e) {
 			return false;
 		}
@@ -137,8 +168,8 @@ TickStorage.prototype.save = function() {
 	
 	var header = {
 		version: TickStorage.CURRENT_VERSION,
-		symbol: this.symbol,
-		daystamp: this.daystamp.toString(),
+		symbol: this._symbol,
+		daystamp: this._daystamp.toString(),
 		countOfEntries: this.countOfEntries || 0,
 		marketOpenPos: this.marketOpenPos,
 		marketClosePos: this.marketClosePos,
@@ -150,17 +181,17 @@ TickStorage.prototype.save = function() {
 		minuteIndexSize: minuteIndexBuffer.length
 	};
 	
-	if (this.bufferData) {
+	if (this._bufferData) {
 		if (!this._possiblyCreatePath()) {
 			return false;
 		}
 		
-		var fd = fs.openSync(this.filename+".tmp", "w");
+		var fd = fs.openSync(this._filename+".tmp", "w");
 		
 		if (this.countOfEntries>0) {
 			var bytesLength = this.countOfEntries*TickStorage.ENTRY_SIZE;
 			
-			var bufferWithData = this.bufferData.slice(0, bytesLength);
+			var bufferWithData = this._bufferData.slice(0, bytesLength);
 			var bufferToWrite = compress(bufferWithData);
 
 			this._saveHeader(fd, header);
@@ -175,16 +206,16 @@ TickStorage.prototype.save = function() {
 		}
 		fs.closeSync(fd);
 
-		if (path.existsSync(this.filename)) {
+		if (path.existsSync(this._filename)) {
 			try {
-				fs.unlinkSync(this.filename);
+				fs.unlinkSync(this._filename);
 			} catch (e) {
 				return false;
 			}
 		}
 
 		try { 
-			fs.renameSync(this.filename+".tmp", this.filename);
+			fs.renameSync(this._filename+".tmp", this._filename);
 		} catch (e) {
 			return false;
 		}
@@ -202,19 +233,19 @@ TickStorage.prototype._saveHeader = function(fd, header) {
 
 TickStorage.prototype.remove = function() {
 	try { 
-		fs.unlinkSync(this.filename);
+		fs.unlinkSync(this._filename);
 	} catch(e) {
 	}
 }
 
 TickStorage.prototype.load = function() {
-	this.offset=0;
-	this.bufferData=null;
+	this._offset=0;
+	this._bufferData=null;
 	this.minuteIndex = new MinuteIndex();
 
 	var fd;
 	try { 
-		fd = fs.openSync(this.filename, "r");
+		fd = fs.openSync(this._filename, "r");
 	} catch (e) {
 		return false;
 	}
@@ -243,10 +274,10 @@ TickStorage.prototype.load = function() {
 	fs.readSync(fd, buffer, 0, buffer.length, headerAndMinuteIndexLength);
 	fs.closeSync(fd);
 	
-	this.bufferData = uncompress(buffer);
+	this._bufferData = uncompress(buffer);
 	delete buffer;
 	
-	return this.bufferData ? true : false;
+	return this._bufferData ? true : false;
 }
 
 TickStorage.prototype._loadMinuteIndex = function(fd, minuteIndexSize) {
@@ -287,12 +318,12 @@ TickStorage.prototype._loadHeader = function(fd) {
 
 TickStorage.prototype.prepareForNew = function(megs) {
 	megs = parseInt(megs) || 100;
-	this.bufferData = new Buffer(1024*1024*megs);
+	this._bufferData = new Buffer(1024*1024*megs);
 	
 	this.minuteIndex = new MinuteIndex();
-	this.minuteIndex.setStartUnixtime(this.startUnixtime);
+	this.minuteIndex.setStartUnixtime(this._startUnixtime);
 	
-	this.offset=0;
+	this._offset=0;
 	
 	this.countOfEntries = 0;
 	this.marketOpenPos = null;
@@ -307,17 +338,17 @@ TickStorage.prototype.prepareForNew = function(megs) {
 }
 
 TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
-	if (unixtime<this.startUnixtime) {
+	if (unixtime<this._startUnixtime) {
 		return;
 	}
 	
-	this._int2buf(this.offset, unixtime);
-	this._int2buf(this.offset+4, volume);
-	this._int2buf(this.offset+8, price);
-	this.bufferData[this.offset+12] = isMarket?1:0;
-	this.offset+=TickStorage.ENTRY_SIZE;
+	this._int2buf(this._offset, unixtime);
+	this._int2buf(this._offset+4, volume);
+	this._int2buf(this._offset+8, price);
+	this._bufferData[this._offset+12] = isMarket?1:0;
+	this._offset+=TickStorage.ENTRY_SIZE;
 	
-	this.minuteIndex.addTick(unixtime, price);
+	this.minuteIndex.addTick(unixtime, volume, price, isMarket);
 	
 	if (isMarket) { 
 		if (this.marketOpenPos===null) {
@@ -337,23 +368,23 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
 }
 
 TickStorage.prototype.nextTick = function() { 
-	if (!this.bufferData || this.offset>=this.bufferData.length) { 
+	if (!this._bufferData || this._offset>=this._bufferData.length) { 
 		return null;
 	}
 	
 	var result = {
-		unixtime: this._buf2int(this.offset),
-		volume: this._buf2int(this.offset+4),
-		price: this._buf2int(this.offset+8),
-		isMarket: this.bufferData[this.offset+12] == 1
+		unixtime: this._buf2int(this._offset),
+		volume: this._buf2int(this._offset+4),
+		price: this._buf2int(this._offset+8),
+		isMarket: this._bufferData[this._offset+12] == 1
 	};
 
-	this.offset+=TickStorage.ENTRY_SIZE;
+	this._offset+=TickStorage.ENTRY_SIZE;
 	return result;
 }
 
 TickStorage.prototype.getHloc = function() {
-	if (this.countOfEntries==0 || !this.bufferData) {
+	if (this.countOfEntries==0 || !this._bufferData) {
 		return {
 			h: null,
 			l: null,

@@ -372,3 +372,63 @@ exports['invalid data'] = function(test) {
 
 	test.done();
 };
+
+exports['minute index'] = function(test) {
+	test.expect(6);
+	
+	var day = new Date();
+	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
+	var tickStorage, minute;
+
+	minute = Date.parseUnixtime(unixtime).getCurrentDayMinute();
+
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+	
+	// basic test
+	tickStorage.addTick(unixtime,   100, 1, true);
+	tickStorage.addTick(unixtime+1, 100, 2, true);
+	tickStorage.addTick(unixtime+2, 100, 3, true);
+
+	test.deepEqual(tickStorage.minuteIndex.index[minute], { p: 0, v: 300, h: 3, l: 1 });
+
+	// next minute
+	tickStorage.addTick(unixtime+62, 100, 4, true);
+	tickStorage.addTick(unixtime+63, 100, 3, true);
+	tickStorage.addTick(unixtime+64, 400, 2, true);
+
+	test.deepEqual(tickStorage.minuteIndex.index[minute+1], { p: 3, v: 600, h: 4, l: 2 });
+
+	// blast from the past
+	tickStorage.addTick(unixtime+1, 100, 8, true); 
+
+	test.deepEqual(tickStorage.minuteIndex.index[minute], { p: 0, v: 300, h: 3, l: 1 });
+
+	// minute with aftermarket data
+	tickStorage.addTick(unixtime+121, 100, 3, false);
+	tickStorage.addTick(unixtime+122, 100, 5, true);
+	tickStorage.addTick(unixtime+123, 100, 7, true);
+	tickStorage.addTick(unixtime+123, 100, 8, false);
+	tickStorage.addTick(unixtime+124, 100, 4, true);
+	tickStorage.addTick(unixtime+125, 100, 9, false);
+
+	test.deepEqual(tickStorage.minuteIndex.index[minute+2], { p: 7, v: 300, h: 7, l: 4 });
+
+	// minute with no market data
+	tickStorage.addTick(unixtime+181, 100, 3, false);
+	tickStorage.addTick(unixtime+182, 100, 3, false);
+	tickStorage.addTick(unixtime+183, 100, 3, false);
+
+	test.deepEqual(tickStorage.minuteIndex.index[minute+3], { p: 13, v: 0, h: null, l: null });
+
+	// check that position is correct after a minute full of aftermarket data
+	tickStorage.addTick(unixtime+240, 100, 200, true);
+	tickStorage.addTick(unixtime+240, 100, 100, true);
+	tickStorage.addTick(unixtime+299, 100, 300, true);
+
+	test.deepEqual(tickStorage.minuteIndex.index[minute+4], { p: 16, v: 300, h: 300, l: 100});
+
+	tickStorage.remove();
+
+	test.done();
+}
