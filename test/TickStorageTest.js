@@ -351,7 +351,7 @@ exports['read past last entry'] = function(test) {
 }*/
 
 exports['zero data'] = function(test) {
-	test.expect(4);
+	test.expect(5);
 
 	var day = new Date();
 	var unixtime = day.unixtime();
@@ -372,10 +372,50 @@ exports['zero data'] = function(test) {
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 1, volume: 100, isMarket: true});
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 2, volume: 100, isMarket: true});
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 3, volume: 200, isMarket: true});
+	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 0, volume: 100, isMarket: true});
 	test.ok(!tickStorage.nextTick());
 	test.done();
 }
 
+exports['market open/close pos'] = function(test) {
+	test.expect(4);
+
+	var day = new Date();
+	var unixtime = day.unixtime();
+	
+	var tickStorage;
+	
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	
+	test.equal(tickStorage.marketOpenPos, 2);
+	test.equal(tickStorage.marketClosePos, 4);
+
+	// test if market open/close are correct in case there is an aftermarket tick in between
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	
+	test.equal(tickStorage.marketOpenPos, 2);
+	test.equal(tickStorage.marketClosePos, 5);
+
+	test.done();
+}
 
 exports['invalid data'] = function(test) {
 	test.expect(5);
