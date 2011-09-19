@@ -342,6 +342,10 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
 		return;
 	}
 	
+	if (price<=0 || volume<=0) {
+		return;
+	}
+	
 	this._int2buf(this._offset, unixtime);
 	this._int2buf(this._offset+4, volume);
 	this._int2buf(this._offset+8, price);

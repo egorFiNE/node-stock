@@ -1,7 +1,7 @@
 {
 	"name": "stock",
 	"description": "node-stock",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"author": "Egor Egorov <me@egorfine.com>",
 	"homepage": "http://egorfine.github.com/node-stock",
 	"bugs": { 

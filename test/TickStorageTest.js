@@ -168,7 +168,7 @@ exports['create huge'] = function(test) {
 	
 	var i=0;
 	for(i=0;i<10000;i++) {
-		tickStorage.addTick(unixtime-10, 100, parseInt(Math.random()*100), true);
+		tickStorage.addTick(unixtime-10, 100, parseInt(Math.random()*100)+1, true);
 	}
 	
 	test.ok(tickStorage.save());
@@ -342,7 +342,39 @@ exports['market data'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-};
+}
+
+/* FIXME
+exports['read past last entry'] = function(test) {
+// add few ticks, rewind, read past last
+	test.done();
+}*/
+
+exports['zero data'] = function(test) {
+	test.expect(4);
+
+	var day = new Date();
+	var unixtime = day.unixtime();
+
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+
+	tickStorage.addTick(unixtime, 100, 1, true);
+	tickStorage.addTick(unixtime, 0, 1, true);
+	tickStorage.addTick(unixtime, 100, 2, true);
+	tickStorage.addTick(unixtime, 200, 3, true);
+	tickStorage.addTick(unixtime, 100, 0, true);
+	
+	tickStorage.save();
+	
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.load();
+	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 1, volume: 100, isMarket: true});
+	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 2, volume: 100, isMarket: true});
+	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 3, volume: 200, isMarket: true});
+	test.ok(!tickStorage.nextTick());
+	test.done();
+}
 
 
 exports['invalid data'] = function(test) {
