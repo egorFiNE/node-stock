@@ -342,7 +342,7 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
 		return;
 	}
 	
-	if (price<=0 || volume<=0) {
+	if (volume<=0) {
 		return;
 	}
 	
