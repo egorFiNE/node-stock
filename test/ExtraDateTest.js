@@ -14,3 +14,18 @@ exports['check parse daystamp'] = function(test) {
 	test.done();
 };
 
+exports['get current day minute'] = function(test) {
+	
+	var day = new Date();
+	
+	day.setHours(10, 52, 46, 0);
+	test.equal(day.getCurrentDayMinute(), 652);
+	
+	day.setHours(0,0,0,0);
+	test.equal(day.getCurrentDayMinute(), 0);
+
+	day.setHours(23,59,59,0);
+	test.equal(day.getCurrentDayMinute(), 1440-1);
+
+	test.done();
+}

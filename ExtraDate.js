@@ -53,3 +53,7 @@ Date.fillEmptyDays = function(from, to) {
 Date.prototype.getDayName = function() {
 	return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][this.getDay()];
 }
+
+Date.prototype.getCurrentDayMinute = function() {
+	return this.getHours()*60 + this.getMinutes();
+}
