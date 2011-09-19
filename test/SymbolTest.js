@@ -24,6 +24,34 @@ exports['basic']= function(test) {
 	test.done();
 }
 
+exports['meta']= function(test) {
+	test.expect(6);
+	
+	fs.mkdirSync('/tmp/DDDD', 0755);
+	fs.writeFileSync('/tmp/DDDD/empty'); // work around 0.5.7 bugs
+	
+	var symbol = new Symbol('/tmp', 'DDDD');
+	test.ok(symbol.load());
+	
+	test.ok(symbol.isActive());
+	symbol.meta.answer='42';
+	test.equal(symbol.meta.answer, '42');
+	symbol.setIsActive(false);
+	symbol.save();
+	
+	symbol = new Symbol('/tmp/', 'DDDD');
+	test.ok(symbol.load());
+	
+	test.ok(!symbol.isActive());
+	test.equal(symbol.meta.answer, '42');
+	
+	fs.unlinkSync('/tmp/DDDD/meta.json');
+	fs.unlinkSync('/tmp/DDDD/empty'); // 0.5.7 bugs
+	fs.rmdirSync('/tmp/DDDD/');
+	test.done();
+}
+
+
 exports['nonexisting']= function(test) {
 	test.expect(7);
 	
