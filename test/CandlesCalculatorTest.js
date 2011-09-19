@@ -1,9 +1,9 @@
 fs = require('fs');
 util = require('util');
-require('../lib/ExtraDate');
-require('../lib/ExtraNumber');
-TickStorage = require('../lib/TickStorage');
-CandlesCalculator = require('../lib/CandlesCalculator');
+require('../ExtraDate');
+require('../ExtraNumber');
+TickStorage = require('../TickStorage');
+CandlesCalculator = require('../CandlesCalculator');
 
 process.env.TZ='America/New_York';
 

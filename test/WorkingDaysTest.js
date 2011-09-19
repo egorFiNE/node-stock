@@ -1,6 +1,6 @@
 util = require('util');
-require('../lib/ExtraDate');
-require('../lib/WorkingDays');
+require('../ExtraDate');
+require('../WorkingDays');
 
 exports['check nyse working days'] = function(test) {
 	process.env.TZ='America/New_York';

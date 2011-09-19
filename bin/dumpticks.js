@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 require('node-date');
-require(__dirname+'/../lib/ExtraDate');
-require(__dirname+'/../lib/ExtraNumber');
-TickStorage = require(__dirname+'/../lib/TickStorage');
+require(__dirname+'/../ExtraDate');
+require(__dirname+'/../ExtraNumber');
+TickStorage = require(__dirname+'/../TickStorage');
 
 process.env.TZ='America/New_York';
 

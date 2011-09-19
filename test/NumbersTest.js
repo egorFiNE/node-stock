@@ -1,4 +1,4 @@
-require('../lib/ExtraNumber');
+require('../ExtraNumber');
 
 function zeroP(number) { 
 	if (number<10) { 

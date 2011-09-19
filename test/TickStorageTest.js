@@ -1,6 +1,6 @@
 util = require('util');
 fs = require('fs');
-TickStorage = require('../lib/TickStorage');
+TickStorage = require('../TickStorage');
 
 exports['basic read']= function(test) {
 	test.expect(4);

@@ -1,6 +1,6 @@
 util = require('util');
 fs = require('fs');
-Symbol = require('../lib/Symbol');
+Symbol = require('../Symbol');
 
 exports['basic']= function(test) {
 	test.expect(11);

@@ -1,6 +1,6 @@
-TimePeriod = require('../lib/TimePeriod');
-require('../lib/ExtraDate');
-require('../lib/ExtraNumber');
+TimePeriod = require('../TimePeriod');
+require('../ExtraDate');
+require('../ExtraNumber');
 
 exports['basic']= function(test) {
 	test.expect(20);

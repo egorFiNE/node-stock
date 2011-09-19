@@ -1,4 +1,4 @@
-require('../lib/ExtraDate');
+require('../ExtraDate');
 
 exports['check parse daystamp'] = function(test) {
 	test.expect(6);
