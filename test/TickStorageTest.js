@@ -31,7 +31,7 @@ exports['basic create'] = function(test) {
 	
 	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	tickStorage.prepareForNew();
-	tickStorage.additionalData.adolf="hitler";
+	tickStorage.additionalData.answer="42";
 	
 	tickStorage.addTick(unixtime-10, 100, 1000000, false);
 	tickStorage.addTick(unixtime-9,  100, 1000000, true);
@@ -44,7 +44,7 @@ exports['basic create'] = function(test) {
 	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
 	test.ok(tickStorage.load());
 	
-	test.equal(tickStorage.additionalData.adolf, "hitler");
+	test.equal(tickStorage.additionalData.answer, "42");
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
 
