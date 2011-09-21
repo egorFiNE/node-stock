@@ -450,32 +450,8 @@ exports['invalid data'] = function(test) {
 	test.done();
 };
 
-exports['minute index with huge out of order data'] = function(test) {
-	test.expect(3);
-	
-	var tickStorage = new TickStorage(__dirname+ '/data/ticks-minuteindex-outoforder', 'MSFT', '20110620');
-	test.ok(tickStorage.load());
-
-	var tmpStorage = new TickStorage('/tmp/', 'DDDD', '20110620');
-	tmpStorage.prepareForNew();
-
-	var tick, count=0;
-	while ((tick = tickStorage.nextTick())) {
-		tmpStorage.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket);
-		count++;
-	}
-	
-//	tmpStorage.minuteIndex.dump(13*60+39, 13*60+43);
-//	tmpStorage.minuteIndex.dump(15*60+29, 15*60+31);
-	
-	test.deepEqual(tmpStorage.minuteIndex.index[13*60+41], {o: 93627, c: 93728,  v: 31444,  h: 245700, l: 245600});
-	test.deepEqual(tmpStorage.minuteIndex.index[15*60+30], {o: 93717, c: 125591, v: 568992, h: 245600, l: 245200});
-
-	test.done();
-}
-
 exports['minute index'] = function(test) {
-	test.expect(6);
+	test.expect(7);
 	
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
@@ -530,6 +506,30 @@ exports['minute index'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[minute+4], {o: 16, c: 18, v: 300, h: 300, l: 100});
 
 	tickStorage.remove();
+
+	test.done();
+}
+
+exports['minute index with huge out of order data'] = function(test) {
+	test.expect(3);
+	
+	var tickStorage = new TickStorage(__dirname+ '/data/ticks-minuteindex-outoforder', 'MSFT', '20110620');
+	test.ok(tickStorage.load());
+
+	var tmpStorage = new TickStorage('/tmp/', 'DDDD', '20110620');
+	tmpStorage.prepareForNew();
+
+	var tick, count=0;
+	while ((tick = tickStorage.nextTick())) {
+		tmpStorage.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket);
+		count++;
+	}
+	
+//	tmpStorage.minuteIndex.dump(13*60+39, 13*60+43);
+//	tmpStorage.minuteIndex.dump(15*60+29, 15*60+31);
+	
+	test.deepEqual(tmpStorage.minuteIndex.index[13*60+41], {o: 93627, c: 93728,  v: 31444,  h: 245700, l: 245600});
+	test.deepEqual(tmpStorage.minuteIndex.index[15*60+30], {o: 93717, c: 125591, v: 568992, h: 245600, l: 245200});
 
 	test.done();
 }
