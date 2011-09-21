@@ -201,8 +201,8 @@ exports['create huge'] = function(test) {
 	test.done();
 }
 
-exports['rewind'] = function(test) {
-	test.expect(7);
+exports['rewind and position'] = function(test) {
+	test.expect(11);
 	
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
@@ -255,6 +255,11 @@ exports['rewind'] = function(test) {
 	tickStorage.rewind(100);
 	tick = tickStorage.nextTick();
 	test.equal(tick.price, 1);
+	
+	test.deepEqual(tickStorage.tickAtPosition(0), {unixtime: unixtime-10, volume: 100, price: 1, isMarket: false});
+	test.deepEqual(tickStorage.tickAtPosition(1), {unixtime: unixtime-9,  volume: 100, price: 2, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(0), {unixtime: unixtime-10, volume: 100, price: 1, isMarket: false});
+	test.deepEqual(tickStorage.tickAtPosition(5), null);
 
 	tickStorage.remove();
 	fs.rmdirSync('/tmp/DDDD/');
@@ -480,6 +485,7 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+1, 100, 8, true); 
 
 	test.deepEqual(tickStorage.minuteIndex.index[minute], {o: 0, c: 6, v: 400, h: 8, l: 1});
+	test.deepEqual(tickStorage.minuteIndex.index[minute+1], {o: 3, c: 5, v: 600, h: 4, l: 2}); // the same
 
 	// minute with aftermarket data
 	tickStorage.addTick(unixtime+121, 100, 3, false);

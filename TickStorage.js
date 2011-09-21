@@ -373,18 +373,25 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
 	this.countOfEntries++;
 }
 
-TickStorage.prototype.nextTick = function() { 
-	if (!this._bufferData || this._offset>=this._bufferData.length) { 
+TickStorage.prototype.tickAtPosition = function(position) { 
+	return this._tickAtOffset(position*TickStorage.ENTRY_SIZE);
+}
+
+TickStorage.prototype._tickAtOffset = function(offset) { 
+	if (!this._bufferData || offset>=this._bufferData.length) { 
 		return null;
 	}
 	
-	var result = {
-		unixtime: this._buf2int(this._offset),
-		volume: this._buf2int(this._offset+4),
-		price: this._buf2int(this._offset+8),
-		isMarket: this._bufferData[this._offset+12] == 1
-	};
+	return {
+		unixtime: this._buf2int(offset),
+		volume: this._buf2int(offset+4),
+		price: this._buf2int(offset+8),
+		isMarket: this._bufferData[offset+12] == 1
+	}
+}
 
+TickStorage.prototype.nextTick = function() { 
+	var result = this._tickAtOffset(this._offset);
 	this._offset+=TickStorage.ENTRY_SIZE;
 	return result;
 }
