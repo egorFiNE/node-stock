@@ -21,8 +21,8 @@ argv = require('optimist')
 		'boolean': true,
 		describe: 'show only market ticks'
 	})
-	.options('seekmin', {
-		describe: 'seek to HH:MM'
+	.options('seek', {
+		describe: 'seek to HH:MM[:SS]'
 	})
 	.argv;
 
@@ -42,9 +42,10 @@ console.log("High = %s Low = %s Open = %s Close = %s",
 	hloc.c.humanReadablePrice()
 );
 
-var seekUnixtime = 0;
+var seekUnixtime = 0, didSeek=true;
 if (argv.seekmin) {
-	seekUnixtime = parseSeek(argv.day, argv.seekmin);
+	seekUnixtime = parseSeek(argv.day, argv.seek);
+	didSeek=false;
 }
 
 var totalVolume=0, totalPrice=0, count=0;
@@ -57,7 +58,8 @@ while ((entry = tickStorage.nextTick())) {
 	totalVolume+=entry.volume;
 	totalPrice+=entry.price;
 	
-	if (entry.unixtime >= seekUnixtime) {
+	if (didSeek || entry.unixtime >= seekUnixtime) {
+		didSeek=true;
 		var d = Date.parseUnixtime(entry.unixtime).toFormat('YYYYMMDD HH24:MI:SS');
 		console.log("[%d] %s: %s @ %s %s",
 			count, d, entry.volume, entry.price.humanReadablePrice(), 
@@ -70,7 +72,10 @@ console.log("Total volume = %d, total price = %d", totalVolume, totalPrice.human
 
 function parseSeek(daystamp, seekmin) {
 	var _seekmin = seekmin.split(':');
+	if (!_seekmin[2]) { 
+		_seekmin[2] = 0;
+	}
 	var d = Date.parseDaystamp(daystamp);
-	d.setHours(_seekmin[0], _seekmin[1], 0, 0);
+	d.setHours(_seekmin[0], _seekmin[1], _seekmin[2], 0);
 	return d.unixtime();
 }
