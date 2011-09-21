@@ -8,13 +8,16 @@ uncompress = require('compress-buffer').uncompress;
 
 function MinuteIndex() {
 	this.index = [];
-	var m=0;
-	for(m=0;m<=1440;m++) {
+	
+	this.resetIndex();
+	
+	this._startUnixtime = null;
+}
+
+MinuteIndex.prototype.resetIndex = function() {
+	for(var m=0;m<=1440;m++) {
 		this.index[m]=null;
 	}
-	
-	this.position=-1;
-	this._startUnixtime = null;
 }
 
 MinuteIndex.prototype.setStartUnixtime = function(unixtime) {
@@ -30,24 +33,21 @@ MinuteIndex.prototype.dump = function(fromMinute, toMinute) {
 	}
 }
 
-MinuteIndex.prototype.addTick = function(unixtime, volume, price, isMarket) {
-	this.position++;
-	
+MinuteIndex.prototype.addTick = function(position, unixtime, volume, price, isMarket) {
 	var minute = Math.floor((unixtime-this._startUnixtime)/60);
-	//util.debug("adding min = "+minute);
 	
-	if (minute>=1440) {
-		/*
-		util.debug("Cannot add minute %d, which is at %s with starting unixtime %s", minute, 
-			Date.parseUnixtime(unixtime), Date.parseUnixtime(this._startUnixtime));
-		*/
-		return;  // FIXME or what else?
+	if (minute>=1440 || minute<0) {
+		throw new Error(util.format("Cannot add minute %d", minute));
+	}
+	
+	if (position==null) {
+		return;
 	}
 	
 	if (this.index[minute]===null) {
 		this.index[minute]={
-			o: this.position, 
-			c: this.position,
+			o: position, 
+			c: position,
 			v: 0,
 			h: null,
 			l: null
@@ -55,7 +55,7 @@ MinuteIndex.prototype.addTick = function(unixtime, volume, price, isMarket) {
 
 	// set ending position
 	} else { 
-		this.index[minute].c = this.position;
+		this.index[minute].c = position;
 	}
 
 	// we shall ignore aftermarket prices for the price index.
@@ -116,7 +116,10 @@ function TickStorage(dbPath, symbol, daystamp) {
 	this.minuteIndex = null;
 	
 	this._offset=0;
-	this.countOfEntries=0;
+	
+	this._lastUnixtime=null;
+	
+	this.position=0;
 	
 	this.additionalData={};
 }
@@ -166,13 +169,25 @@ TickStorage.prototype._possiblyCreatePath = function() {
 }
 
 TickStorage.prototype.save = function() {
+	for(var p=0;p<this._additionalTicks.length;p++) {
+		var tick = this._additionalTicks[p];
+		if (tick.unixtime<Number.MAX_VALUE) {
+			// console.log("adding %d before end", tick.price);
+			this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
+		}
+	}
+	
+	this._additionalTicks=[];
+	
+	this.generateMinuteIndex();
+	
 	var minuteIndexBuffer = this.minuteIndex.toGzip();
 	
 	var header = {
 		version: TickStorage.CURRENT_VERSION,
 		symbol: this._symbol,
 		daystamp: this._daystamp.toString(),
-		countOfEntries: this.countOfEntries || 0,
+		countOfEntries: this.position || 0,
 		marketOpenPos: this.marketOpenPos,
 		marketClosePos: this.marketClosePos,
 		marketHigh: this._getMarketHigh(),
@@ -190,8 +205,8 @@ TickStorage.prototype.save = function() {
 		
 		var fd = fs.openSync(this._filename+".tmp", "w");
 		
-		if (this.countOfEntries>0) {
-			var bytesLength = this.countOfEntries*TickStorage.ENTRY_SIZE;
+		if (this.position>0) {
+			var bytesLength = this.position*TickStorage.ENTRY_SIZE;
 			
 			var bufferWithData = this._bufferData.slice(0, bytesLength);
 			var bufferToWrite = compress(bufferWithData);
@@ -260,7 +275,7 @@ TickStorage.prototype.load = function() {
 	
 	var headerAndMinuteIndexLength = TickStorage.HEADER_SIZE + headerValues.minuteIndexSize;
 	
-	if (this.countOfEntries==0) {
+	if (this.position==0) {
 		return true;
 	}
 
@@ -299,7 +314,7 @@ TickStorage.prototype._loadHeader = function(fd) {
 			return null;
 		}
 		
-		this.countOfEntries = headerData.countOfEntries;
+		this.position = headerData.countOfEntries;
 		this.marketOpenPos = headerData.marketOpenPos;
 		this.marketClosePos = headerData.marketClosePos;
 		this.marketHigh = headerData.marketHigh;
@@ -322,12 +337,18 @@ TickStorage.prototype.prepareForNew = function(megs) {
 	megs = parseInt(megs) || 100;
 	this._bufferData = new Buffer(1024*1024*megs);
 	
+	// we explicitly don't fill because of two reasons: 
+	// a) when we save, we splice() only the part with real data
+	// b) it slows down this method considerably.
+	// this._bufferData.fill(0);
+	
 	this.minuteIndex = new MinuteIndex();
 	this.minuteIndex.setStartUnixtime(this._startUnixtime);
 	
 	this._offset=0;
+	this._lastUnixtime=0;
 	
-	this.countOfEntries = 0;
+	this.position = 0;
 	this.marketOpenPos = null;
 	this.marketClosePos = null;
 	
@@ -337,9 +358,11 @@ TickStorage.prototype.prepareForNew = function(megs) {
 	this.marketClose = null;
 	
 	this.additionalData={};
+	
+	this._additionalTicks=[];
 }
 
-TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
+TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disableLogic) {
 	if (unixtime<this._startUnixtime) {
 		return;
 	}
@@ -348,37 +371,114 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket) {
 		return;
 	}
 	
+	if (!this._lastUnixtime) { 
+		this._lastUnixtime = unixtime;
+	}
+	
+	if (!disableLogic && unixtime < this._lastUnixtime-600) {
+		var found = this._findPositionOfPreviousTickWithCloseUnixtime(unixtime);
+		
+		if (found!=null) {
+			for(var z=found+1;z<this.position;z++) {
+				this._additionalTicks.push(this.tickAtPosition(z));
+			}
+			
+			this.dumpAdditionalTicksPool();
+			
+			this._compressAdditionalTicksPool();
+
+			this.position = found+1;
+			this._offset=(TickStorage.ENTRY_SIZE * this.position);
+		}
+	}
+	
+	this._lastUnixtime = unixtime;
+
+	if (!disableLogic) { 
+		this._possiblyAppendAdditionalTicks();
+	}
+	
 	this._int2buf(this._offset, unixtime);
 	this._int2buf(this._offset+4, volume);
 	this._int2buf(this._offset+8, price);
 	this._bufferData[this._offset+12] = isMarket?1:0;
 	this._offset+=TickStorage.ENTRY_SIZE;
-	
-	this.minuteIndex.addTick(unixtime, volume, price, isMarket);
-	
+
 	if (isMarket) { 
 		if (this.marketOpenPos===null) {
-			this.marketOpenPos = this.countOfEntries;
+			this.marketOpenPos = this.position;
 			this.marketOpen = price;
 			this.marketHigh = price;
 			this.marketLow = price;
 		}
-		this.marketClosePos = this.countOfEntries;
+		this.marketClosePos = this.position;
 		this.marketClose = price;
-		
+
 		this.marketHigh = Math.max(this.marketHigh, price);
 		this.marketLow = Math.min(this.marketLow, price);
 	}
-	
-	this.countOfEntries++;
+
+	this.position++;
 }
+
+TickStorage.prototype._possiblyAppendAdditionalTicks = function() {
+	for(var p=0;p<this._additionalTicks.length;p++) {
+		var tick = this._additionalTicks[p];
+		if (tick.unixtime<this._lastUnixtime) {
+			this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
+			tick.unixtime = Number.MAX_VALUE; // quick way to eliminate from archive
+		}
+	}
+}
+
+TickStorage.prototype._findPositionOfPreviousTickWithCloseUnixtime = function(unixtime) {
+	for (var pos=this.position-1;pos>=this.position-5;pos--) {
+		var _tick = this.tickAtPosition(pos);
+		if (_tick && Math.abs(_tick.unixtime - unixtime) < 10) { 
+			return pos;
+		}
+	}
+	return null;
+}
+
+TickStorage.prototype.generateMinuteIndex = function() {
+	this.minuteIndex.resetIndex();
+	for (var pos=0;pos<this.position;pos++) {
+		var tick = this.tickAtPosition(pos);
+		this.minuteIndex.addTick(pos, tick.unixtime, tick.volume, tick.price, tick.isMarket);
+	}
+}
+
+TickStorage.prototype.dumpAdditionalTicksPool = function() {
+	this._additionalTicks.forEach(function(entry) {
+		console.log(
+			"%s, %d @ %s is out of order", 
+			Date.parseUnixtime(entry.unixtime).toFormat('HH24:MI:SS'), entry.volume, entry.price
+		);
+	}, this);
+}
+
+TickStorage.prototype._compressAdditionalTicksPool = function() {
+	var lastEntry = JSON.stringify(this._additionalTicks[0]);
+	var clearPool=[this._additionalTicks[0]];
+	
+	this._additionalTicks.forEach(function(entry) {
+		if (JSON.stringify(entry) != lastEntry) {
+			clearPool.push(entry);
+		}
+		lastEntry = JSON.stringify(entry);
+	}, this);
+	
+	this._additionalTicks = clearPool;
+}
+
 
 TickStorage.prototype.tickAtPosition = function(position) { 
 	return this._tickAtOffset(position*TickStorage.ENTRY_SIZE);
 }
 
 TickStorage.prototype._tickAtOffset = function(offset) { 
-	if (!this._bufferData || offset>=this._bufferData.length) { 
+	if (!this._bufferData || offset>=this._bufferData.length || offset < 0) { 
 		return null;
 	}
 	
@@ -397,7 +497,7 @@ TickStorage.prototype.nextTick = function() {
 }
 
 TickStorage.prototype.getHloc = function() {
-	if (this.countOfEntries==0 || !this._bufferData) {
+	if (this.position==0 || !this._bufferData) {
 		return {
 			h: null,
 			l: null,
@@ -422,7 +522,4 @@ TickStorage.prototype._getMarketLow = function() {
 	return this.marketLow==Number.MAX_VALUE?null:this.marketLow;
 }
 
-
-
 module.exports = TickStorage;
-
