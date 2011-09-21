@@ -2,6 +2,11 @@ util = require('util');
 fs = require('fs');
 TickStorage = require('../TickStorage');
 
+exports['timezone test']= function(test) {
+	test.equal(process.env.TZ, 'America/New_York');
+	test.done();
+}
+
 exports['basic read']= function(test) {
 	test.expect(4);
 	
@@ -445,6 +450,30 @@ exports['invalid data'] = function(test) {
 	test.done();
 };
 
+exports['minute index with huge out of order data'] = function(test) {
+	test.expect(3);
+	
+	var tickStorage = new TickStorage(__dirname+ '/data/ticks-minuteindex-outoforder', 'MSFT', '20110620');
+	test.ok(tickStorage.load());
+
+	var tmpStorage = new TickStorage('/tmp/', 'DDDD', '20110620');
+	tmpStorage.prepareForNew();
+
+	var tick, count=0;
+	while ((tick = tickStorage.nextTick())) {
+		tmpStorage.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket);
+		count++;
+	}
+	
+//	tmpStorage.minuteIndex.dump(13*60+39, 13*60+43);
+//	tmpStorage.minuteIndex.dump(15*60+29, 15*60+31);
+	
+	test.deepEqual(tmpStorage.minuteIndex.index[13*60+41], {o: 93627, c: 93728,  v: 31444,  h: 245700, l: 245600});
+	test.deepEqual(tmpStorage.minuteIndex.index[15*60+30], {o: 93717, c: 125591, v: 568992, h: 245600, l: 245200});
+
+	test.done();
+}
+
 exports['minute index'] = function(test) {
 	test.expect(6);
 	
@@ -462,19 +491,19 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+1, 100, 2, true);
 	tickStorage.addTick(unixtime+2, 100, 3, true);
 
-	test.deepEqual(tickStorage.minuteIndex.index[minute], { p: 0, v: 300, h: 3, l: 1 });
+	test.deepEqual(tickStorage.minuteIndex.index[minute], {o: 0, c: 2, v: 300, h: 3, l: 1});
 
 	// next minute
 	tickStorage.addTick(unixtime+62, 100, 4, true);
 	tickStorage.addTick(unixtime+63, 100, 3, true);
 	tickStorage.addTick(unixtime+64, 400, 2, true);
 
-	test.deepEqual(tickStorage.minuteIndex.index[minute+1], { p: 3, v: 600, h: 4, l: 2 });
+	test.deepEqual(tickStorage.minuteIndex.index[minute+1], {o: 3, c: 5, v: 600, h: 4, l: 2});
 
 	// blast from the past
 	tickStorage.addTick(unixtime+1, 100, 8, true); 
 
-	test.deepEqual(tickStorage.minuteIndex.index[minute], { p: 0, v: 300, h: 3, l: 1 });
+	test.deepEqual(tickStorage.minuteIndex.index[minute], {o: 0, c: 6, v: 400, h: 8, l: 1});
 
 	// minute with aftermarket data
 	tickStorage.addTick(unixtime+121, 100, 3, false);
@@ -484,21 +513,21 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+124, 100, 4, true);
 	tickStorage.addTick(unixtime+125, 100, 9, false);
 
-	test.deepEqual(tickStorage.minuteIndex.index[minute+2], { p: 7, v: 300, h: 7, l: 4 });
+	test.deepEqual(tickStorage.minuteIndex.index[minute+2], {o: 7, c: 12, v: 300, h: 7, l: 4});
 
 	// minute with no market data
 	tickStorage.addTick(unixtime+181, 100, 3, false);
 	tickStorage.addTick(unixtime+182, 100, 3, false);
 	tickStorage.addTick(unixtime+183, 100, 3, false);
 
-	test.deepEqual(tickStorage.minuteIndex.index[minute+3], { p: 13, v: 0, h: null, l: null });
+	test.deepEqual(tickStorage.minuteIndex.index[minute+3], {o: 13, c: 15, v: 0, h: null, l: null});
 
 	// check that position is correct after a minute full of aftermarket data
 	tickStorage.addTick(unixtime+240, 100, 200, true);
 	tickStorage.addTick(unixtime+240, 100, 100, true);
 	tickStorage.addTick(unixtime+299, 100, 300, true);
 
-	test.deepEqual(tickStorage.minuteIndex.index[minute+4], { p: 16, v: 300, h: 300, l: 100});
+	test.deepEqual(tickStorage.minuteIndex.index[minute+4], {o: 16, c: 18, v: 300, h: 300, l: 100});
 
 	tickStorage.remove();
 

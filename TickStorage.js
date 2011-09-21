@@ -15,23 +15,23 @@ function MinuteIndex() {
 	
 	this.position=-1;
 	this._startUnixtime = null;
-	
-	this._lastMinute=-1;
-	this._lastUnixtime=-1;
 }
 
 MinuteIndex.prototype.setStartUnixtime = function(unixtime) {
 	this._startUnixtime = unixtime;
-	this._lastUnixtime = unixtime;
+}
+
+MinuteIndex.prototype.dump = function(fromMinute, toMinute) {
+	fromMinute = fromMinute || 0;
+	toMinute = toMinute || 1440-1;
+	var i;
+	for(i=fromMinute;i<=toMinute;i++) {
+		util.debug(util.format("%d: %s", i, util.inspect(this.index[i])));
+	}
 }
 
 MinuteIndex.prototype.addTick = function(unixtime, volume, price, isMarket) {
 	this.position++;
-	
-	// we shall ignore correctional ticks from the past as they don't change anything and don't belong to the minute
-	if (unixtime<this._lastUnixtime) {
-		return; 
-	}
 	
 	var minute = Math.floor((unixtime-this._startUnixtime)/60);
 	//util.debug("adding min = "+minute);
@@ -46,16 +46,18 @@ MinuteIndex.prototype.addTick = function(unixtime, volume, price, isMarket) {
 	
 	if (this.index[minute]===null) {
 		this.index[minute]={
-			p: this.position,
+			o: this.position, 
+			c: this.position,
 			v: 0,
 			h: null,
 			l: null
 		};
+
+	// set ending position
+	} else { 
+		this.index[minute].c = this.position;
 	}
 
-	this._lastMinute = minute;
-	this._lastUnixtime = unixtime;
-	
 	// we shall ignore aftermarket prices for the price index.
 	if (!isMarket) {
 		return; 
