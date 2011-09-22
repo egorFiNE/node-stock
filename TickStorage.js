@@ -432,10 +432,12 @@ TickStorage.prototype.generateMinuteIndex = function() {
 
 TickStorage.prototype.dumpAdditionalTicks = function() {
 	this._orphanTicks.forEach(function(entry) {
-		console.log(
-			"%s, %d @ %s is out of order", 
-			Date.parseUnixtime(entry.unixtime).toFormat('HH24:MI:SS'), entry.volume, entry.price
-		);
+		if (entry) { 
+			console.log(
+				"%s, %d @ %s is out of order", 
+				Date.parseUnixtime(entry.unixtime).toFormat('HH24:MI:SS'), entry.volume, entry.price
+			);
+		}
 	}, this);
 }
 
