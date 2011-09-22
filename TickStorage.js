@@ -108,6 +108,7 @@ function TickStorage(dbPath, symbol, daystamp) {
 
 	var day = Date.parseDaystamp(this._daystamp);
 	this._startUnixtime = day.unixtime();
+	this._endUnixtime = this._startUnixtime+86400;
 	
 	this._path = dbPath+'/'+symbol+'/';
 	this._filename = this._path+this._daystamp+'.ticks';
@@ -115,11 +116,10 @@ function TickStorage(dbPath, symbol, daystamp) {
 	this._bufferData = null; 
 	this.minuteIndex = null;
 	
-	this._offset=0;
-	
 	this._lastUnixtime=null;
 	
 	this.position=0;
+	this.count=0;
 	
 	this.additionalData={};
 }
@@ -148,11 +148,11 @@ TickStorage.prototype.exists = function() {
 
 TickStorage.prototype.rewind = function(ticks) {
 	if (!ticks) {
-		this._offset=0;
+		this.position=0;
 	} else { 
-		this._offset-=TickStorage.ENTRY_SIZE*ticks;
-		if (this._offset<0) {
-			this._offset=0;
+		this.position -= ticks;
+		if (this.position<0) {
+			this.position=0;
 		}
 	}
 }
@@ -169,15 +169,13 @@ TickStorage.prototype._possiblyCreatePath = function() {
 }
 
 TickStorage.prototype.save = function() {
-	for(var p=0;p<this._additionalTicks.length;p++) {
-		var tick = this._additionalTicks[p];
-		if (tick.unixtime<Number.MAX_VALUE) {
-			// console.log("adding %d before end", tick.price);
+	this._orphanTicks.forEach(function(tick) {
+		if (tick) {
 			this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
 		}
-	}
+	}, this);
 	
-	this._additionalTicks=[];
+	this._orphanTicks=[];
 	
 	this.generateMinuteIndex();
 	
@@ -187,13 +185,9 @@ TickStorage.prototype.save = function() {
 		version: TickStorage.CURRENT_VERSION,
 		symbol: this._symbol,
 		daystamp: this._daystamp.toString(),
-		countOfEntries: this.position || 0,
+		countOfEntries: this.count || 0,
 		marketOpenPos: this.marketOpenPos,
 		marketClosePos: this.marketClosePos,
-		marketHigh: this._getMarketHigh(),
-		marketLow: this._getMarketLow(),
-		marketOpen: this.marketOpen,
-		marketClose: this.marketClose,
 		additionalData: this.additionalData,
 		minuteIndexSize: minuteIndexBuffer.length
 	};
@@ -206,7 +200,7 @@ TickStorage.prototype.save = function() {
 		var fd = fs.openSync(this._filename+".tmp", "w");
 		
 		if (this.position>0) {
-			var bytesLength = this.position*TickStorage.ENTRY_SIZE;
+			var bytesLength = this.count*TickStorage.ENTRY_SIZE;
 			
 			var bufferWithData = this._bufferData.slice(0, bytesLength);
 			var bufferToWrite = compress(bufferWithData);
@@ -256,7 +250,8 @@ TickStorage.prototype.remove = function() {
 }
 
 TickStorage.prototype.load = function() {
-	this._offset=0;
+	this.position=0;
+	this.count=0;
 	this._bufferData=null;
 	this.minuteIndex = new MinuteIndex();
 
@@ -275,7 +270,7 @@ TickStorage.prototype.load = function() {
 	
 	var headerAndMinuteIndexLength = TickStorage.HEADER_SIZE + headerValues.minuteIndexSize;
 	
-	if (this.position==0) {
+	if (this.count==0) {
 		return true;
 	}
 
@@ -314,13 +309,9 @@ TickStorage.prototype._loadHeader = function(fd) {
 			return null;
 		}
 		
-		this.position = headerData.countOfEntries;
+		this.count = headerData.countOfEntries;
 		this.marketOpenPos = headerData.marketOpenPos;
 		this.marketClosePos = headerData.marketClosePos;
-		this.marketHigh = headerData.marketHigh;
-		this.marketLow = headerData.marketLow;
-		this.marketOpen = headerData.marketOpen;
-		this.marketClose = headerData.marketClose;
 		this.additionalData = headerData.additionalData;
 		
 		return {
@@ -345,29 +336,25 @@ TickStorage.prototype.prepareForNew = function(megs) {
 	this.minuteIndex = new MinuteIndex();
 	this.minuteIndex.setStartUnixtime(this._startUnixtime);
 	
-	this._offset=0;
 	this._lastUnixtime=0;
 	
 	this.position = 0;
+	this.count=0;
 	this.marketOpenPos = null;
 	this.marketClosePos = null;
 	
-	this.marketHigh = Number.MIN_VALUE;
-	this.marketLow = Number.MAX_VALUE;
-	this.marketOpen = null;
-	this.marketClose = null;
-	
 	this.additionalData={};
 	
-	this._additionalTicks=[];
+	this._orphanTicks=[];
 }
 
-TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disableLogic) {
-	if (unixtime<this._startUnixtime) {
+TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disableOrphanLogic) {
+	if (unixtime<this._startUnixtime || unixtime>=this._endUnixtime) {
 		return;
 	}
 	
-	if (volume<=0) {
+	// zero price is fine (volume correction ticks), but negative is not.
+	if (volume<=0 || price<0) {
 		return;
 	}
 	
@@ -375,58 +362,52 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disa
 		this._lastUnixtime = unixtime;
 	}
 	
-	if (!disableLogic && unixtime < this._lastUnixtime-600) {
+	if (!disableOrphanLogic && unixtime < this._lastUnixtime-600) {
 		var found = this._findPositionOfPreviousTickWithCloseUnixtime(unixtime);
 		
 		if (found!=null) {
 			for(var z=found+1;z<this.position;z++) {
-				this._additionalTicks.push(this.tickAtPosition(z));
+				this._orphanTicks.push(this.tickAtPosition(z));
 			}
 			
-			this.dumpAdditionalTicksPool();
+			this.dumpAdditionalTicks();
 			
-			this._compressAdditionalTicksPool();
+			this._compressAdditionalTicks();
 
 			this.position = found+1;
-			this._offset=(TickStorage.ENTRY_SIZE * this.position);
+			this.count = this.position;
 		}
 	}
 	
 	this._lastUnixtime = unixtime;
 
-	if (!disableLogic) { 
+	if (!disableOrphanLogic) { 
 		this._possiblyAppendAdditionalTicks();
 	}
-	
-	this._int2buf(this._offset, unixtime);
-	this._int2buf(this._offset+4, volume);
-	this._int2buf(this._offset+8, price);
-	this._bufferData[this._offset+12] = isMarket?1:0;
-	this._offset+=TickStorage.ENTRY_SIZE;
+
+	var offset = this.position * TickStorage.ENTRY_SIZE;
+	this._int2buf(offset, unixtime);
+	this._int2buf(offset+4, volume);
+	this._int2buf(offset+8, price);
+	this._bufferData[offset+12] = isMarket?1:0;
 
 	if (isMarket) { 
 		if (this.marketOpenPos===null) {
 			this.marketOpenPos = this.position;
-			this.marketOpen = price;
-			this.marketHigh = price;
-			this.marketLow = price;
 		}
 		this.marketClosePos = this.position;
-		this.marketClose = price;
-
-		this.marketHigh = Math.max(this.marketHigh, price);
-		this.marketLow = Math.min(this.marketLow, price);
 	}
 
 	this.position++;
+	this.count++;
 }
 
 TickStorage.prototype._possiblyAppendAdditionalTicks = function() {
-	for(var p=0;p<this._additionalTicks.length;p++) {
-		var tick = this._additionalTicks[p];
-		if (tick.unixtime<this._lastUnixtime) {
+	for (var p=0;p<this._orphanTicks.length;p++) {
+		var tick = this._orphanTicks[p];
+		if (tick && tick.unixtime<this._lastUnixtime) {
 			this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
-			tick.unixtime = Number.MAX_VALUE; // quick way to eliminate from archive
+			this._orphanTicks[p] = null;
 		}
 	}
 }
@@ -443,14 +424,14 @@ TickStorage.prototype._findPositionOfPreviousTickWithCloseUnixtime = function(un
 
 TickStorage.prototype.generateMinuteIndex = function() {
 	this.minuteIndex.resetIndex();
-	for (var pos=0;pos<this.position;pos++) {
+	for (var pos=0;pos<this.count;pos++) {
 		var tick = this.tickAtPosition(pos);
 		this.minuteIndex.addTick(pos, tick.unixtime, tick.volume, tick.price, tick.isMarket);
 	}
 }
 
-TickStorage.prototype.dumpAdditionalTicksPool = function() {
-	this._additionalTicks.forEach(function(entry) {
+TickStorage.prototype.dumpAdditionalTicks = function() {
+	this._orphanTicks.forEach(function(entry) {
 		console.log(
 			"%s, %d @ %s is out of order", 
 			Date.parseUnixtime(entry.unixtime).toFormat('HH24:MI:SS'), entry.volume, entry.price
@@ -458,22 +439,26 @@ TickStorage.prototype.dumpAdditionalTicksPool = function() {
 	}, this);
 }
 
-TickStorage.prototype._compressAdditionalTicksPool = function() {
-	var lastEntry = JSON.stringify(this._additionalTicks[0]);
-	var clearPool=[this._additionalTicks[0]];
+TickStorage.prototype._compressAdditionalTicks = function() {
+	var lastEntry = JSON.stringify(this._orphanTicks[0]);
+	var clearPool=[this._orphanTicks[0]];
 	
-	this._additionalTicks.forEach(function(entry) {
+	this._orphanTicks.forEach(function(entry) {
 		if (JSON.stringify(entry) != lastEntry) {
 			clearPool.push(entry);
 		}
 		lastEntry = JSON.stringify(entry);
 	}, this);
 	
-	this._additionalTicks = clearPool;
+	this._orphanTicks = clearPool;
 }
 
 
 TickStorage.prototype.tickAtPosition = function(position) { 
+	if (position>=this.count) {
+		return null;
+	}
+	
 	return this._tickAtOffset(position*TickStorage.ENTRY_SIZE);
 }
 
@@ -491,35 +476,9 @@ TickStorage.prototype._tickAtOffset = function(offset) {
 }
 
 TickStorage.prototype.nextTick = function() { 
-	var result = this._tickAtOffset(this._offset);
-	this._offset+=TickStorage.ENTRY_SIZE;
+	var result = this._tickAtOffset(this.position*TickStorage.ENTRY_SIZE);
+	this.position++;
 	return result;
-}
-
-TickStorage.prototype.getHloc = function() {
-	if (this.position==0 || !this._bufferData) {
-		return {
-			h: null,
-			l: null,
-			o: null,
-			c: null
-		}
-	}
-	
-	return {
-		h: this._getMarketHigh(),
-		l: this._getMarketLow(),
-		o: this.marketOpen,
-		c: this.marketClose
-	}
-}
-
-TickStorage.prototype._getMarketHigh = function() {
-	return this.marketHigh==Number.MIN_VALUE?null:this.marketHigh;
-}
-
-TickStorage.prototype._getMarketLow = function() {
-	return this.marketLow==Number.MAX_VALUE?null:this.marketLow;
 }
 
 module.exports = TickStorage;

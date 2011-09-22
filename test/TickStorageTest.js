@@ -8,7 +8,7 @@ exports['timezone test']= function(test) {
 }
 
 exports['basic read']= function(test) {
-	test.expect(4);
+	test.expect(5);
 	
 	var tickStorage = new TickStorage(__dirname+ '/data/ticks-correct', 'LVS', '20110104');
 	test.ok(tickStorage.load());
@@ -25,6 +25,7 @@ exports['basic read']= function(test) {
 	test.equal(totalVolume, 39222254, 'total volume');
 	test.equal(totalPrice, 55302035684, 'total price');
 	test.equal(totalCount, 118003, 'total count');
+	test.equal(tickStorage.count, totalCount, 'tickstorage.count');
 	test.done();
 }
 
@@ -55,23 +56,15 @@ exports['basic create'] = function(test) {
 
 	var tick;
 	while ((tick = tickStorage.nextTick())) {
-		if (tick.isMarket) {
-			totalVolume+=tick.volume;
-			totalPrice+=tick.price;
-			totalCount++;
-		}
+		totalVolume+=tick.volume;
+		totalPrice+=tick.price;
+		totalCount++;
 	}
 	
-	test.equal(totalVolume, 800, 'total volume');
-	test.equal(totalPrice, 4020000, 'total price');
-	test.equal(totalCount, 4, 'total count');
-	
-	test.deepEqual(tickStorage.getHloc(), {
-		h: 1020000,
-		l: 990000,
-		o: 1000000,
-		c: 990000
-	})
+	test.equal(totalVolume, 900, 'total volume');
+	test.equal(totalPrice, 5020000, 'total price');
+	test.equal(totalCount, 5, 'total count');
+	test.equal(tickStorage.count, totalCount, 'tickStorage.count');
 	
 	tickStorage.remove();
 	fs.rmdirSync('/tmp/DDDD/');
@@ -101,11 +94,9 @@ exports['set incorrect unixtime'] = function(test) {
 
 	var tick;
 	while ((tick = tickStorage.nextTick())) {
-		if (tick.isMarket) {
-			totalVolume+=tick.volume;
-			totalPrice+=tick.price;
-			totalCount++;
-		}
+		totalVolume+=tick.volume;
+		totalPrice+=tick.price;
+		totalCount++;
 	}
 	
 	test.equal(totalVolume, 200, 'total volume');
@@ -139,11 +130,9 @@ exports['non-sequential unixtime'] = function(test) {
 
 	var tick;
 	while ((tick = tickStorage.nextTick())) {
-		if (tick.isMarket) {
-			totalVolume+=tick.volume;
-			totalPrice+=tick.price;
-			totalCount++;
-		}
+		totalVolume+=tick.volume;
+		totalPrice+=tick.price;
+		totalCount++;
 	}
 	
 	test.equal(totalVolume, 200, 'total volume');
@@ -163,7 +152,11 @@ exports['non-sequential unixtime'] = function(test) {
 }
 
 exports['create huge'] = function(test) {
-	test.expect(4);
+	if (process.env.SKIP_HUGE) {
+		test.done(); return;
+	}
+	
+	test.expect(5);
 	
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
@@ -172,7 +165,7 @@ exports['create huge'] = function(test) {
 	tickStorage.prepareForNew();
 	
 	var i=0;
-	for(i=0;i<10000;i++) {
+	for(i=0;i<1000000;i++) {
 		tickStorage.addTick(unixtime-10, 100, parseInt(Math.random()*100)+1, true);
 	}
 	
@@ -185,15 +178,14 @@ exports['create huge'] = function(test) {
 
 	var tick;
 	while ((tick = tickStorage.nextTick())) {
-		if (tick.isMarket) {
-			totalVolume+=tick.volume;
-			totalPrice+=tick.price;
-			totalCount++;
-		}
+		totalVolume+=tick.volume;
+		totalPrice+=tick.price;
+		totalCount++;
 	}
 	
-	test.equal(totalVolume, 100*10000, 'total volume');
-	test.equal(totalCount, 10000, 'total count');
+	test.equal(totalVolume, 100*1000000, 'total volume');
+	test.equal(totalCount, 1000000, 'total count');
+	test.equal(tickStorage.count, totalCount, 'total count');
 	
 	tickStorage.remove();
 	fs.rmdirSync('/tmp/DDDD/');
@@ -202,7 +194,7 @@ exports['create huge'] = function(test) {
 }
 
 exports['rewind and position'] = function(test) {
-	test.expect(11);
+	test.expect(13);
 	
 	var day = new Date();
 	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
@@ -216,10 +208,10 @@ exports['rewind and position'] = function(test) {
 	tickStorage.addTick(unixtime-7,  100, 4, true);
 	tickStorage.addTick(unixtime-6,  500, 5, true);
 	
-	tickStorage.save();
+	test.ok(tickStorage.save());
 	
 	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
-	tickStorage.load();
+	test.ok(tickStorage.load());
 	
 	var tick;
 	tick = tickStorage.nextTick();
@@ -267,9 +259,8 @@ exports['rewind and position'] = function(test) {
 	test.done();
 }
 
-
 exports['create zero tick'] = function(test) {
-	test.expect(2);
+	test.expect(4);
 	
 	var day = new Date();
 	
@@ -282,13 +273,9 @@ exports['create zero tick'] = function(test) {
 	tickStorage.load();
 	
 	test.ok(!tickStorage.nextTick());
-	
-	test.deepEqual(tickStorage.getHloc(), {
-		h: null,
-		l: null,
-		o: null,
-		c: null
-	})
+	test.equal(tickStorage.count, 0);
+	test.equal(tickStorage.marketOpenPos, null);
+	test.equal(tickStorage.marketClosePos, null);
 	
 	tickStorage.remove();
 	fs.rmdirSync('/tmp/DDDD/');
@@ -309,59 +296,8 @@ exports['non-existing'] = function(test) {
 	test.done();
 }
 
-exports['market data'] = function(test) {
-	test.expect(12);
-
-	var day = new Date();
-	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
-
-	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
-	tickStorage.prepareForNew();
-
-	tickStorage.addTick(unixtime-10, 100, 1, false);
-	tickStorage.addTick(unixtime-9,  100, 2, true);
-	tickStorage.addTick(unixtime-8,  100, 3, true);
-	tickStorage.addTick(unixtime-7,  100, 4, true);
-	tickStorage.addTick(unixtime-6,  500, 5, true);
-	tickStorage.addTick(unixtime-5,  500, 6, false);
-	
-	var hloc = tickStorage.getHloc();
-
-	test.equal(hloc.h, 5);
-	test.equal(hloc.l, 2);
-	test.equal(hloc.o, 2);
-	test.equal(hloc.c, 5);
-	test.equal(tickStorage.marketOpenPos,  1);
-	test.equal(tickStorage.marketClosePos, 4);
-
-	tickStorage.save();
-
-	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
-	tickStorage.load();
-
-	hloc = tickStorage.getHloc();
-
-	test.equal(hloc.h, 5);
-	test.equal(hloc.l, 2);
-	test.equal(hloc.o, 2);
-	test.equal(hloc.c, 5);
-	test.equal(tickStorage.marketOpenPos,  1);
-	test.equal(tickStorage.marketClosePos, 4);
-
-	tickStorage.remove();
-	fs.rmdirSync('/tmp/DDDD/');
-	
-	test.done();
-}
-
-/* FIXME
-exports['read past last entry'] = function(test) {
-// add few ticks, rewind, read past last
-	test.done();
-}*/
-
 exports['zero data'] = function(test) {
-	test.expect(5);
+	test.expect(6);
 
 	var day = new Date();
 	var unixtime = day.unixtime();
@@ -373,6 +309,7 @@ exports['zero data'] = function(test) {
 	tickStorage.addTick(unixtime, 0, 1, true);
 	tickStorage.addTick(unixtime, 100, 2, true);
 	tickStorage.addTick(unixtime, 200, 3, true);
+	tickStorage.addTick(unixtime, 100, -123, true);
 	tickStorage.addTick(unixtime, 100, 0, true);
 	
 	tickStorage.save();
@@ -383,6 +320,7 @@ exports['zero data'] = function(test) {
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 2, volume: 100, isMarket: true});
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 3, volume: 200, isMarket: true});
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 0, volume: 100, isMarket: true});
+	test.ok(!tickStorage.nextTick());
 	test.ok(!tickStorage.nextTick());
 	test.done();
 }
@@ -522,6 +460,100 @@ exports['minute index'] = function(test) {
 	test.done();
 }
 
+exports['ignore out of day ticks'] = function(test) {
+	test.expect(9);
+	
+	var day = new Date();
+	day.clearTime();
+	var unixtime = day.unixtime();
+	
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+	
+	tickStorage.addTick(unixtime-1, 101, 10, true); // must not save
+	tickStorage.addTick(unixtime, 101, 20, true);
+	tickStorage.addTick(unixtime+86400-1, 101, 30, true);
+	tickStorage.addTick(unixtime+86400, 101, 40, true); // must not save
+	
+	test.ok(tickStorage.save());
+
+	test.deepEqual(tickStorage.tickAtPosition(0), {unixtime: unixtime, price: 20, volume: 101, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(1), {unixtime: unixtime+86400-1, price: 30, volume: 101, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(2), null);
+	
+	test.equal(tickStorage.count, 2);
+	test.equal(tickStorage.marketClosePos, 1);
+	
+	test.deepEqual(tickStorage.minuteIndex.index[0],      {o: 0,  c: 0,  v: 101,  h: 20, l: 20});
+	test.deepEqual(tickStorage.minuteIndex.index[1440-1], {o: 1,  c: 1,  v: 101,  h: 30, l: 30});
+	test.deepEqual(tickStorage.minuteIndex.index[1440], null);
+	
+	tickStorage.remove();
+	
+	test.done();
+}
+
+exports['blast from the future'] = function(test) {
+	test.expect(7);
+	
+	var day = new Date();
+	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
+	var minute = Date.parseUnixtime(unixtime).getCurrentDayMinute();
+	
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+	
+	tickStorage.addTick(unixtime+1, 101, 10, true);
+	tickStorage.addTick(unixtime+100000, 102, 20, true);
+	tickStorage.addTick(unixtime+3, 101, 30, true);
+	
+	test.ok(tickStorage.save());
+
+	test.deepEqual(tickStorage.tickAtPosition(0), {unixtime: unixtime+1, price: 10, volume: 101, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(1), {unixtime: unixtime+3, price: 30, volume: 101, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(2), null);
+	
+	test.equal(tickStorage.count, 2);
+	test.equal(tickStorage.marketClosePos, 1);
+	
+	test.deepEqual(tickStorage.minuteIndex.index[minute],    {o: 0,  c: 1,  v: 202,  h: 30, l: 10});
+	
+	tickStorage.remove();
+	
+	test.done();
+}
+
+exports['blast from the past'] = function(test) {
+	test.expect(7);
+	
+	var day = new Date();
+	var unixtime = parseInt(day.unixtime()/60)*60; // minute round
+	var minute = Date.parseUnixtime(unixtime).getCurrentDayMinute();
+	
+	var tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+	
+	tickStorage.addTick(unixtime+1, 101, 10, true);
+	tickStorage.addTick(unixtime-100000, 102, 20, true);
+	tickStorage.addTick(unixtime+3, 101, 30, true);
+	
+	test.ok(tickStorage.save());
+
+	test.deepEqual(tickStorage.tickAtPosition(0), {unixtime: unixtime+1, price: 10, volume: 101, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(1), {unixtime: unixtime+3, price: 30, volume: 101, isMarket: true});
+	test.deepEqual(tickStorage.tickAtPosition(2), null);
+	
+	test.equal(tickStorage.count, 2);
+	test.equal(tickStorage.marketClosePos, 1);
+	
+	test.deepEqual(tickStorage.minuteIndex.index[minute],    {o: 0,  c: 1,  v: 202,  h: 30, l: 10});
+	
+	tickStorage.remove();
+	
+	test.done();
+}
+
+
 exports['out of order data small'] = function(test) {
 	test.expect(6);
 	
@@ -591,6 +623,7 @@ exports['out of order data larger'] = function(test) {
 exports['minute index with huge out of order data'] = function(test) {
 	test.expect(7);
 	
+	// this day contains TWO equal ticks that are way out of order, in the future
 	var tickStorage = new TickStorage(__dirname+ '/data/ticks-minuteindex-outoforder', 'MSFT', '20110620');
 	test.ok(tickStorage.load());
 
@@ -616,3 +649,4 @@ exports['minute index with huge out of order data'] = function(test) {
 
 	test.done();
 }
+
