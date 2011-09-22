@@ -102,7 +102,7 @@ MinuteIndex.prototype.fromGzip = function(buffer) {
 
 function TickStorage(dbPath, symbol, daystamp) { 
 	this._dbPath = dbPath;
-	this._symbol = symbol;
+	this._symbol = symbol.toUpperCase();
 
 	this._daystamp = daystamp;
 
