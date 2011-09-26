@@ -11,6 +11,8 @@ Symbol = function(dbPath, symbol) {
 	
 	this._metaFilename = this.dirPath+'meta.json';
 	this.meta={};
+	
+	this._loadMeta();
 }
 
 Symbol.prototype.setIsActive = function(isActive) {
