@@ -128,6 +128,10 @@ TickStorage.HEADER_SIZE=1024;
 TickStorage.ENTRY_SIZE=13;
 TickStorage.CURRENT_VERSION=1;
 
+TickStorage.prototype.getSymbol = function() {
+	return this._symbol;
+}
+
 TickStorage.prototype._buf2int = function(offset) {
 	return this._bufferData[0+offset] +
 		(this._bufferData[1+offset] << 8) +

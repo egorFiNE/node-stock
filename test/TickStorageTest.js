@@ -8,10 +8,11 @@ exports['timezone test']= function(test) {
 }
 
 exports['basic read']= function(test) {
-	test.expect(5);
+	test.expect(6);
 	
 	var tickStorage = new TickStorage(__dirname+ '/data/ticks-correct', 'LVS', '20110104');
 	test.ok(tickStorage.load());
+	test.equal(tickStorage.getSymbol(), 'LVS');
 	
 	var totalVolume=0, totalPrice=0, totalCount=0;
 

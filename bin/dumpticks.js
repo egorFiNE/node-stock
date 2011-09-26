@@ -5,8 +5,6 @@ require(__dirname+'/../ExtraDate');
 require(__dirname+'/../ExtraNumber');
 TickStorage = require(__dirname+'/../TickStorage');
 
-process.env.TZ='America/New_York';
-
 argv = require('optimist')
 	.options('symbol', {
 		demand: true
@@ -21,6 +19,10 @@ argv = require('optimist')
 		'boolean': true,
 		describe: 'show only market ticks'
 	})
+	.options('cme', {
+		'boolean': true,
+		describe: 'use CME time zone'
+	})
 	.options('seek', {
 		describe: 'seek to HH:MM[:SS]'
 	})
@@ -31,16 +33,15 @@ if (!argv.dbpath || !argv.symbol || !argv.day) {
 	return;
 } 
 
+if (argv.cme) { 
+	process.env.TZ='America/Chicago';
+} else { 
+	process.env.TZ='America/New_York';
+}
+
+
 var tickStorage = new TickStorage(argv.dbpath, argv.symbol, argv.day);
 tickStorage.load();
-
-var hloc = tickStorage.getHloc();
-console.log("High = %s Low = %s Open = %s Close = %s", 
-	hloc.h.humanReadablePrice(),
-	hloc.l.humanReadablePrice(),
-	hloc.o.humanReadablePrice(),
-	hloc.c.humanReadablePrice()
-);
 
 var seekUnixtime = 0, didSeek=true;
 if (argv.seekmin) {
