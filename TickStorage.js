@@ -206,7 +206,7 @@ TickStorage.prototype.save = function(quick) {
 		
 		var fd = fs.openSync(this._filename+".tmp", "w");
 		
-		if (this.position>0) {
+		if (this.count>0) {
 			var bytesLength = this.count*TickStorage.ENTRY_SIZE;
 			
 			var bufferWithData = this._bufferData.slice(0, bytesLength);
