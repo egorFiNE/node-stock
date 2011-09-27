@@ -122,6 +122,7 @@ function TickStorage(dbPath, symbol, daystamp) {
 	this.count=0;
 	
 	this.additionalData={};
+	this._orphanTicks=[];
 }
 
 TickStorage.HEADER_SIZE=1024;
@@ -172,16 +173,18 @@ TickStorage.prototype._possiblyCreatePath = function() {
 	return true;
 }
 
-TickStorage.prototype.save = function() {
-	this._orphanTicks.forEach(function(tick) {
-		if (tick) {
-			this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
-		}
-	}, this);
-	
-	this._orphanTicks=[];
-	
-	this.generateMinuteIndex();
+TickStorage.prototype.save = function(quick) {
+	if (!quick) { 
+		this._orphanTicks.forEach(function(tick) {
+			if (tick) {
+				this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
+			}
+		}, this);
+
+		this._orphanTicks=[];
+
+		this.generateMinuteIndex();
+	}
 	
 	var minuteIndexBuffer = this.minuteIndex.toGzip();
 	
