@@ -141,7 +141,7 @@ CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period) {
 	var tickStorage;
 	try { 
 		tickStorage = new TickStorage(dbPath, symbol, daystamp);
-		tickStorage.loadTicks();
+		tickStorage.load();
 	} catch(e) {
 		return null;
 	}
