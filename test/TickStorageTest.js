@@ -323,6 +323,10 @@ exports['zero data'] = function(test) {
 	test.deepEqual(tickStorage.nextTick(), {unixtime: unixtime, price: 0, volume: 100, isMarket: true});
 	test.ok(!tickStorage.nextTick());
 	test.ok(!tickStorage.nextTick());
+	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
+	
 	test.done();
 }
 
@@ -456,8 +460,6 @@ exports['minute index'] = function(test) {
 	tickStorage.generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute+4], {o: 16, c: 18, v: 300, h: 300, l: 100});
 
-	tickStorage.remove();
-
 	test.done();
 }
 
@@ -490,6 +492,7 @@ exports['ignore out of day ticks'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[1440], null);
 	
 	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
 }
@@ -520,6 +523,7 @@ exports['blast from the future'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[minute],    {o: 0,  c: 1,  v: 202,  h: 30, l: 10});
 	
 	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
 }
@@ -550,6 +554,7 @@ exports['blast from the past'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[minute],    {o: 0,  c: 1,  v: 202,  h: 30, l: 10});
 	
 	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
 }
@@ -579,6 +584,7 @@ exports['out of order data small'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[minute+16], {o: 2,  c: 2,  v: 102,  h: 20, l: 20});
 	
 	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
 }
@@ -617,6 +623,7 @@ exports['out of order data larger'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[minute+16], {o: 4,  c: 6,  v: 306,  h: 5, l: 3});
 	
 	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
 }
