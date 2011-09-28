@@ -39,6 +39,7 @@ CandlesCalculator.prototype.serialize = function() {
 
 CandlesCalculator.prototype.clearPeriod = function() {
 	this.currentVolume=0;
+	this.currenTicksCount=0;
 	this.currentHigh=Number.MIN_VALUE;
 	this.currentLow=Number.MAX_VALUE;
 	this.currentOpen=0;
@@ -100,6 +101,7 @@ CandlesCalculator.prototype.addTick = function(unixtime, price, volume) {
 			this.currentOpen = price;
 		}
 		this.currentVolume+=volume;
+		this.currenTicksCount++;
 	}
 }
 
@@ -117,7 +119,7 @@ CandlesCalculator.prototype.emitCandle = function() {
 	}
 
 	this.emit('candle', HH, MM,
-		this.currentHigh, this.currentLow, this.currentOpen, this.currentClose, this.currentVolume
+		this.currentHigh, this.currentLow, this.currentOpen, this.currentClose, this.currentVolume, this.currenTicksCount
 	);
 	return;
 }
