@@ -115,7 +115,10 @@ TimePeriod.prototype.getFirstLastMinutes = function() {
 			lastMinute = Math.max(lastMinute,i);
 		}
 	}
-	return [firstMinute,lastMinute];
+	return [
+		firstMinute==Number.MAX_VALUE?0:firstMinute,
+		lastMinute==Number.MIN_VALUE?1339:lastMinute
+	];
 }
 
 TimePeriod.prototype.minuteToTime = function(m) {
