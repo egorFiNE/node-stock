@@ -76,8 +76,6 @@ MinuteIndex.prototype.addTick = function(position, unixtime, volume, price, isMa
 	} else { 
 		this.index[minute].l = Math.min(this.index[minute].l, price);
 	}
-	// util.debug(minute+ " = " + util.inspect(this.index[minute]));
-
 }
 
 MinuteIndex.prototype.toGzip = function() {
