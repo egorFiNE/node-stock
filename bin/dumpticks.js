@@ -1,18 +1,16 @@
 #!/usr/bin/env node
 
+process.env.TZ = process.argv.indexOf('--cme')>=0 ? 
+	'America/Chicago' : 
+	'America/New_York';
+
 require('node-date');
 require(__dirname+'/../ExtraDate');
 require(__dirname+'/../ExtraNumber');
 TickStorage = require(__dirname+'/../TickStorage');
 
 argv = require('optimist')
-	.options('symbol', {
-		demand: true
-	})
 	.options('dbpath', {
-		demand: true
-	})
-	.options('day', {
 		demand: true
 	})
 	.options('market', {
@@ -26,19 +24,34 @@ argv = require('optimist')
 	.options('seek', {
 		describe: 'seek to HH:MM[:SS]'
 	})
+	.usage("Run: dumpticks [args] <day symbol> or <symbol day> or <symbol/day> or <day/symbol>")
 	.argv;
 
-if (!argv.dbpath || !argv.symbol || !argv.day) {
+if (!argv.dbpath || argv._.length<=0) {
 	console.log("Wrong usage. Ask --help ?")
 	return;
 } 
 
-if (argv.cme) { 
-	process.env.TZ='America/Chicago';
-} else { 
-	process.env.TZ='America/New_York';
+var dayArg = argv._[0] + '';
+if (argv._[1]) {
+	dayArg+='/'+argv._[1];
+}
+dayArg = dayArg.replace('/', ' ');
+dayArg = dayArg.replace(/\s+/, ' ');
+dayArg = dayArg.split(' ');
+if (dayArg.length<2) {
+	console.log("Wrong usage. Ask --help ?")
+	return;
 }
 
+if (parseInt(dayArg[0])>0) {
+	argv.day = parseInt(dayArg[0]);
+	argv.symbol = dayArg[1];
+} else { 
+	argv.day = parseInt(dayArg[1]);
+	argv.symbol = dayArg[0];
+}
+argv.symbol = argv.symbol.toUpperCase();
 
 var tickStorage = new TickStorage(argv.dbpath, argv.symbol, argv.day);
 tickStorage.load();
