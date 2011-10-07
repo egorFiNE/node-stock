@@ -9,7 +9,7 @@ require(__dirname+'/../ExtraDate');
 require(__dirname+'/../ExtraNumber');
 TickStorage = require(__dirname+'/../TickStorage');
 
-argv = require('optimist')
+var optimist = require('optimist')
 	.options('dbpath', {
 		demand: true
 	})
@@ -24,11 +24,13 @@ argv = require('optimist')
 	.options('seek', {
 		describe: 'seek to HH:MM[:SS]'
 	})
-	.usage("Run: dumpticks [args] <day symbol> or <symbol day> or <symbol/day> or <day/symbol>")
-	.argv;
+	.usage("Run: dumpticks [args] <day symbol> or <symbol day> or <symbol/day> or <day/symbol>");
+	
+var argv=optimist.argv;
 
-if (!argv.dbpath || argv._.length<=0) {
-	console.log("Wrong usage. Ask --help ?")
+if (argv._.length<=0) {
+	console.log("Wrong usage.\n");
+	optimist.showHelp();
 	return;
 } 
 
@@ -40,7 +42,8 @@ dayArg = dayArg.replace('/', ' ');
 dayArg = dayArg.replace(/\s+/, ' ');
 dayArg = dayArg.split(' ');
 if (dayArg.length<2) {
-	console.log("Wrong usage. Ask --help ?")
+	console.log("Wrong usage.\n");
+	optimist.showHelp();
 	return;
 }
 
