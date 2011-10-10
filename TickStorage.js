@@ -149,6 +149,25 @@ TickStorage.prototype.exists = function() {
 	return path.existsSync(this._filename);
 }
 
+TickStorage.prototype.tellMinute = function() {
+	for (var m=0;m<1440;m++) {
+		if (this.minuteIndex.index[m] && this.position>=this.minuteIndex.index[m].o && this.position<=this.minuteIndex.index[m].c) {
+			return m;
+		}
+	}
+	return null;
+}
+
+TickStorage.prototype.seekToMinute = function(minute) {
+	var m = this.minuteIndex.index[minute];
+	if (m) {
+		this.position = m.o;
+		return true;
+	} else { 
+		return false;
+	}
+}
+
 TickStorage.prototype.rewind = function(ticks) {
 	if (!ticks) {
 		this.position=0;

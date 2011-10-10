@@ -154,7 +154,7 @@ exports['non-sequential unixtime'] = function(test) {
 
 exports['create huge'] = function(test) {
 	if (process.env.SKIP_HUGE) {
-		test.done(); return;
+		test.done();return;
 	}
 	
 	test.expect(5);
@@ -460,6 +460,27 @@ exports['minute index'] = function(test) {
 	tickStorage.generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute+4], {o: 16, c: 18, v: 300, h: 300, l: 100});
 
+	test.done();
+}
+
+exports['seek to minute']= function(test) {
+	test.expect(9);
+	
+	var tickStorage = new TickStorage(__dirname+ '/data/ticks-correct', 'LVS', '20110104');
+	test.ok(tickStorage.load());
+	
+	var tick;
+	
+	test.ok(tickStorage.seekToMinute(9*60+34));
+	test.ok(tick=tickStorage.nextTick());
+	test.equal(Date.parseUnixtime(tick.unixtime).toFormat('YYYYMMDD HH24:MI:SS'), '20110104 09:34:00');
+	test.equal(tickStorage.tellMinute(), 9*60+34);
+
+	test.ok(!tickStorage.seekToMinute(1));
+	test.equal(tickStorage.tellMinute(), 9*60+34);
+	test.ok(!tickStorage.seekToMinute(1339));
+	test.equal(tickStorage.tellMinute(), 9*60+34);
+	
 	test.done();
 }
 
