@@ -14,23 +14,6 @@ exports['check parse daystamp'] = function(test) {
 	test.done();
 };
 
-exports['get current day minute'] = function(test) {
-	test.expect(3);
-	
-	var day = new Date();
-	
-	day.setHours(10, 52, 46, 0);
-	test.equal(day.getCurrentDayMinute(), 652);
-	
-	day.setHours(0,0,0,0);
-	test.equal(day.getCurrentDayMinute(), 0);
-
-	day.setHours(23,59,59,0);
-	test.equal(day.getCurrentDayMinute(), 1440-1);
-
-	test.done();
-}
-
 exports['nyse market time'] = function(test) {
 	test.expect(7);
 	
@@ -57,5 +40,37 @@ exports['nyse market time'] = function(test) {
 	day.setHours(0, 0, 0, 0);
 	test.ok(!day.isNyseMarketTime());
 	
+	test.done();
+}
+
+exports['current day minute'] = function(test) {
+	test.expect(6);
+	
+	var day = new Date();
+	
+	day.setHours(10, 52, 46, 0);
+	test.equal(day.getCurrentDayMinute(), 652);
+	
+	day.setHours(0,0,0,0);
+	test.equal(day.getCurrentDayMinute(), 0);
+
+	day.setHours(23,59,59,0);
+	test.equal(day.getCurrentDayMinute(), 1440-1);
+
+	day.setCurrentDayMinute(400);
+	test.equal(day.toFormat('HH24:MI'), '06:40');
+
+	day.setCurrentDayMinute(0);
+	test.equal(day.toFormat('HH24:MI'), '00:00');
+
+	day.setCurrentDayMinute(1439);
+	test.equal(day.toFormat('HH24:MI'), '23:59');
+
+	test.done();
+}
+
+exports['minutes helper'] = function(test) {
+	test.expect(1);
+	test.equal(Date.minuteToFormat(400,  'HH24:MI'), '06:40');
 	test.done();
 }

@@ -54,11 +54,24 @@ Date.prototype.getDayName = function() {
 	return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][this.getDay()];
 }
 
-Date.prototype.getCurrentDayMinute = function() {
-	return this.getHours()*60 + this.getMinutes();
-}
-
 Date.prototype.isNyseMarketTime = function() {
 	var m = this.getCurrentDayMinute();
 	return (m>=570 && m<960)
 }
+
+Date.prototype.setCurrentDayMinute = function(minute) {
+	var hours = Math.floor(minute/60);
+	var minutes = minute-hours*60;
+	this.setHours(hours, minutes, 0, 0);
+}
+
+Date.prototype.getCurrentDayMinute = function() {
+	return this.getHours()*60 + this.getMinutes();
+}
+
+Date.minuteToFormat = function(minute, format) {
+	var d = new Date();
+	d.setCurrentDayMinute(minute);
+	return d.toFormat(format);
+}
+
