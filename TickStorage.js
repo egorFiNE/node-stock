@@ -162,12 +162,13 @@ TickStorage.prototype.exists = function() {
 }
 
 TickStorage.prototype.tellMinute = function() {
+	var _m=null;
 	for (var m=0;m<1440;m++) {
-		if (this.minuteIndex.index[m] && this.position>=this.minuteIndex.index[m].o && this.position<=this.minuteIndex.index[m].c) {
-			return m;
+		if (this.minuteIndex.index[m] && this.position>=this.minuteIndex.index[m].o	) {
+			_m = m;
 		}
 	}
-	return null;
+	return _m;
 }
 
 TickStorage.prototype.seekToMinute = function(minute) {

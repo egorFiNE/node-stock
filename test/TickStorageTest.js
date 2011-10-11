@@ -499,7 +499,7 @@ exports['minute index'] = function(test) {
 }
 
 exports['seek to minute']= function(test) {
-	test.expect(9);
+	//test.expect(9);
 	
 	var tickStorage = new TickStorage(__dirname+ '/data/ticks-correct', 'LVS', '20110104');
 	test.ok(tickStorage.load());
@@ -515,6 +515,48 @@ exports['seek to minute']= function(test) {
 	test.equal(tickStorage.tellMinute(), 9*60+34);
 	test.ok(!tickStorage.seekToMinute(1339));
 	test.equal(tickStorage.tellMinute(), 9*60+34);
+
+	var day = Date.parseDaystamp(20110922);
+	day.setHours(9, 35, 0, 0);
+	var baseUnixtime = day.unixtime();
+	
+	tickStorage = new TickStorage('/tmp', 'DDDD', '20110922');
+	tickStorage.prepareForNew();
+	
+	tickStorage.addTick(baseUnixtime+0,  100, 200, true);
+	tickStorage.addTick(baseUnixtime+1,  100, 200, true);
+	
+	tickStorage.addTick(baseUnixtime+60, 102, 400, true);
+	tickStorage.addTick(baseUnixtime+62, 102, 500, true);
+	tickStorage.addTick(baseUnixtime+63, 102, 600, true);
+	tickStorage.addTick(baseUnixtime+65, 102, 100, true);
+	
+	test.ok(tickStorage.save());
+	test.ok(tickStorage.load());
+	
+	tickStorage.filterMarketTime();
+	
+	test.equal(tickStorage.tellMinute(), 9*60+35);
+	
+	test.ok(tickStorage.nextTick());
+	test.ok(tickStorage.nextTick());
+	
+	test.equal(tickStorage.tellMinute(), 9*60+36);
+	test.ok(tickStorage.nextTick());
+	test.ok(tickStorage.nextTick());
+	test.ok(tickStorage.nextTick());
+	test.equal(tickStorage.tellMinute(), 9*60+36);
+	test.ok(tickStorage.nextTick());
+	test.equal(tickStorage.tellMinute(), 9*60+36);
+	
+	test.ok(!tickStorage.nextTick());
+	test.equal(tickStorage.tellMinute(), 9*60+36);
+
+	test.ok(!tickStorage.nextTick());
+	test.equal(tickStorage.tellMinute(), 9*60+36);
+	
+	tickStorage.remove();
+	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
 }
