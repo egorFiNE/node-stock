@@ -121,11 +121,23 @@ function TickStorage(dbPath, symbol, daystamp) {
 	
 	this.additionalData={};
 	this._orphanTicks=[];
+	
+	this.marketTimeOnly = false;
+	this.nextTick = this._nextTickAll;
 }
 
 TickStorage.HEADER_SIZE=1024;
 TickStorage.ENTRY_SIZE=13;
 TickStorage.CURRENT_VERSION=1;
+
+TickStorage.prototype.filterMarketTime = function() {
+	this.marketTimeOnly = true;
+	if (this.position < this.marketOpenPos) {
+		this.position = this.marketOpenPos;
+	}
+	
+	this.nextTick = this._nextTickMarket;
+}
 
 TickStorage.prototype.getSymbol = function() {
 	return this._symbol;
@@ -501,10 +513,20 @@ TickStorage.prototype._tickAtOffset = function(offset) {
 	}
 }
 
-TickStorage.prototype.nextTick = function() { 
-	var result = this._tickAtOffset(this.position*TickStorage.ENTRY_SIZE);
-	this.position++;
-	return result;
+TickStorage.prototype._nextTickAll = function() { 
+	return this._tickAtOffset(this.position++*TickStorage.ENTRY_SIZE);
+}
+
+TickStorage.prototype._nextTickMarket = function() { 
+	var tick;
+	do {
+		tick = this._nextTickAll();
+	} while (tick && !tick.isMarket && this.position<=this.marketClosePos);
+	
+	if (!tick.isMarket) {
+		return null;
+	}
+	return tick;
 }
 
 module.exports = TickStorage;

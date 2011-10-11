@@ -370,6 +370,41 @@ exports['market open/close pos'] = function(test) {
 	test.done();
 }
 
+exports['market only'] = function(test) {
+	//test.expect(4);
+
+	var day = new Date();
+	var unixtime = day.unixtime();
+	
+	var tickStorage;
+
+	// test if market open/close are correct in case there is an aftermarket tick in between
+	tickStorage = new TickStorage('/tmp/', 'DDDD', day.daystamp());
+	tickStorage.prepareForNew();
+
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 2, true);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 3, true);
+	tickStorage.addTick(unixtime, 100, 4, true);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	tickStorage.addTick(unixtime, 100, 1, false);
+	
+	tickStorage.save();
+	tickStorage.load();
+	tickStorage.filterMarketTime();
+	
+	test.deepEqual(tickStorage.nextTick(), { unixtime: unixtime, volume: 100, price: 2, isMarket: true});
+	test.deepEqual(tickStorage.nextTick(), { unixtime: unixtime, volume: 100, price: 3, isMarket: true});
+	test.deepEqual(tickStorage.nextTick(), { unixtime: unixtime, volume: 100, price: 4, isMarket: true});
+	test.deepEqual(tickStorage.nextTick(), null);
+	
+	tickStorage.remove();
+
+	test.done();
+}
+
 exports['invalid data'] = function(test) {
 	test.expect(5);
 
