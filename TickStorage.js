@@ -523,7 +523,7 @@ TickStorage.prototype._nextTickMarket = function() {
 		tick = this._nextTickAll();
 	} while (tick && !tick.isMarket && this.position<=this.marketClosePos);
 	
-	if (!tick.isMarket) {
+	if (tick && !tick.isMarket) {
 		return null;
 	}
 	return tick;
