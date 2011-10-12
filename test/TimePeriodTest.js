@@ -3,7 +3,7 @@ require('../ExtraDate');
 require('../ExtraNumber');
 
 exports['basic']= function(test) {
-	test.expect(24);
+	test.expect(30);
 	var t;
 	
 	t = new TimePeriod('9:30-10:00');
@@ -13,6 +13,9 @@ exports['basic']= function(test) {
 	test.ok(t.isHourMinuteIn(9, 59));
 	test.ok(!t.isHourMinuteIn(10, 00));
 	test.ok(!t.isHourMinuteIn(9, 29));
+	
+	test.equal(t.firstMinute, 9*60+30);
+	test.equal(t.lastMinute,  9*60+59);
 	
 	t = new TimePeriod('9:30-10:00,11:00-12:00,13:35-13:43');
 	test.ok(t.isValid);
@@ -30,11 +33,17 @@ exports['basic']= function(test) {
 	test.ok(t.isHourMinuteIn(13, 35));
 	test.ok(!t.isHourMinuteIn(13, 43));
 
+	test.equal(t.firstMinute, 9*60+30);
+	test.equal(t.lastMinute,  13*60+42);
+
 	t = new TimePeriod('0-24');
 	test.ok(t.isValid);
 	test.ok(t.isHourMinuteIn(0,0));
 	test.ok(t.isHourMinuteIn(10,30));
 	test.ok(t.isHourMinuteIn(23,59));
+
+	test.equal(t.firstMinute, 0);
+	test.equal(t.lastMinute,  23*60+59);
 
 	test.done();
 }
@@ -57,7 +66,6 @@ exports['empty']= function(test) {
 	test.ok(!t.isHourMinuteIn(15, 59));
 	test.ok(!t.isHourMinuteIn(16, 00));
 	
-	t.setUnixtime(Date.unixtime());
 	test.ok(!t.isHourMinuteIn(16, 00));
 	test.ok(!t.isUnixtimeIn(Date.unixtime()));
 	test.done();
@@ -205,7 +213,6 @@ exports['unixtime']= function(test) {
 	
 	var t = new TimePeriod('9:30-10:00');
 	test.ok(t.isValid);
-	t.setUnixtime(Date.unixtime());
 	
 	test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+30*60));
 	test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+36*60));

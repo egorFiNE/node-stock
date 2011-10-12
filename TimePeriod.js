@@ -1,4 +1,7 @@
 function TimePeriod(str) {
+	this.firstMinute=null;
+	this.lastMinute=null;
+	
 	this.periodString = (str || '').replace(/ +/g,'');
 	if (!str || str==='') {
 		this.periods=[];
@@ -6,6 +9,8 @@ function TimePeriod(str) {
 	} else { 
 		this.parse();
 	}
+	
+	this.baseUnixtime=0;
 }
 
 module.exports = TimePeriod; 
@@ -13,22 +18,38 @@ module.exports = TimePeriod;
 TimePeriod.prototype.parse = function() {
 	this.isValid=true;
 	this.periods=[];
-	
+
+	this.firstMinute=null;
+	this.lastMinute=null;
+
 	var periods = this.periodString.split(',');
 	var i=0;
 	for(i=0;i<periods.length;i++) {
 		this.parseSinglePeriod(periods[i]);
 	}
+	
+	for(var m=0;m<1440;m++) {
+		if (this.periods[m]) {
+			if (this.firstMinute==null) {
+				this.firstMinute=m;
+			}
+			this.lastMinute=m;
+		}
+	}
 }
 
 
-TimePeriod.prototype.setUnixtime  = function(unixtime) {
+TimePeriod.prototype._setUnixtime  = function(unixtime) {
 	var d = Date.parseUnixtime(unixtime);
 	d.clearTime();
 	this.baseUnixtime = d.unixtime();
 }
 
 TimePeriod.prototype.isUnixtimeIn = function(unixtime) {
+	if (!this.baseUnixtime) {
+		this._setUnixtime(unixtime);
+	}
+	
 	var seconds = unixtime - this.baseUnixtime;
 	var minute = parseInt(seconds/60);
 	return this.isMinuteIn(minute);
