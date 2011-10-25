@@ -23,7 +23,7 @@ function format(f) {
 			case '%T':return Date.parseUnixtime(args[i++]).toFormat('HH24:MI:SS');
 			case '%s':return String(args[i++]);
 			case '%d':return Number(args[i++]);
-			case '%p':return Number(args[i++]).humanReadablePrice();
+			case '%p':return parseInt(args[i++]).humanReadablePrice();
 			case '%j':return JSON.stringify(args[i++]);
 			case '%%':return '%';
 			default:
