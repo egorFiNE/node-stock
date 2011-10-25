@@ -60,7 +60,7 @@ var tickStorage = new TickStorage(argv.dbpath, argv.symbol, argv.day);
 tickStorage.load();
 
 var seekUnixtime = 0, didSeek=true;
-if (argv.seekmin) {
+if (argv.seek) {
 	seekUnixtime = parseSeek(argv.day, argv.seek);
 	didSeek=false;
 }
