@@ -142,6 +142,10 @@ TimePeriod.prototype.getFirstLastMinutes = function() {
 	];
 }
 
+TimePeriod.prototype.setMinute = function(m, enabled) {
+	this.periods[m] = enabled? true: false;
+}
+
 TimePeriod.prototype.minuteToTime = function(m) {
 	return parseInt(m/60) + ':' +parseInt(m%60).toDoubleZeroPaddedString();
 }
