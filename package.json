@@ -1,7 +1,7 @@
 {
 	"name": "stock",
 	"description": "node-stock",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"author": "Egor Egorov <me@egorfine.com>",
 	"homepage": "http://egorfine.github.com/node-stock",
 	"bugs": { 
@@ -12,8 +12,8 @@
 		"url": "http://github.com/egorfine/node-stock.git"
 	},
 	"dependencies": { 
-		"compress-buffer": ">= 0.4.0",
-		"node-date": ">= 0.0.1"
+		"compress-buffer": ">= 0.4.1",
+		"date-utils": ">= 1.2.5"
 	},
 	"devDependencies": {}
 }

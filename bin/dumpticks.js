@@ -57,7 +57,12 @@ if (parseInt(dayArg[0])>0) {
 argv.symbol = argv.symbol.toUpperCase();
 
 var tickStorage = new TickStorage(argv.dbpath, argv.symbol, argv.day);
-tickStorage.load();
+if (!tickStorage.load()) {
+	console.log("Cannot load %s/%s", argv.symbol, argv.day);
+	return;
+}
+
+tickStorage.minuteIndex.dump(569,961);
 
 var seekUnixtime = 0, didSeek=true;
 if (argv.seek) {

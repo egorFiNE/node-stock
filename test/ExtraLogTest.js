@@ -1,4 +1,4 @@
-require('node-date');
+require('date-utils');
 ExtraLog = require('../ExtraLog');
 
 exports['price format'] = function(test) {

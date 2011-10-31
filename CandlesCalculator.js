@@ -5,7 +5,7 @@ events = require('events');
 function CandlesCalculator(minutes) {
 	events.EventEmitter.call(this);
 	
-	this.debug=false;
+	this.debug=true;
 	
 	this.startUnixtime = 0;
 	this.lastPeriod=0;
@@ -57,9 +57,6 @@ CandlesCalculator.prototype.calculateStartUnixtime = function(unixtime) {
 	var q = Date.parseUnixtime(unixtime);
 	q.clearTime();
 	this.startUnixtime = q.unixtime();
-	if (this.debug) {
-		util.debug("I figured out start unixtime, it's at "+q.humanReadableDateTimeWithSeconds());
-	}
 }
 
 CandlesCalculator.prototype.addTick = function(unixtime, price, volume) {
@@ -71,13 +68,12 @@ CandlesCalculator.prototype.addTick = function(unixtime, price, volume) {
 		return; // blast from the past
 	}
 	this.lastUnixtime=unixtime;
-
 	
 	var second = unixtime - this.startUnixtime;
 	var period = (second/this.periodLength) >> 0;
 	
 	if (this.debug) { 
-		util.debug("in period "+period);
+		//util.debug("in period "+period);
 	}
 	
 	if (this.lastPeriod==0) {
@@ -86,7 +82,7 @@ CandlesCalculator.prototype.addTick = function(unixtime, price, volume) {
 	
 	if (period>this.lastPeriod) {
 		if (this.debug) {
-			util.debug("Current period "+period+" is more than the last period "+this.lastPeriod);
+			//util.debug("Current period "+period+" is more than the last period "+this.lastPeriod);
 		}
 		this.emitCandle();
 		this.clearPeriod();
@@ -115,7 +111,7 @@ CandlesCalculator.prototype.emitCandle = function() {
 	var HH = da.getHours();
 	var MM = da.getMinutes();
 	if (this.debug) {
-		util.debug("Current period candle is not empty, so I emit at "+seconds+" which is "+HH+":"+MM);
+		//util.debug("Current period candle is not empty, so I emit at "+seconds+" which is "+HH+":"+MM);
 	}
 
 	this.emit('candle', HH, MM,

@@ -1,4 +1,4 @@
-require('node-date');
+require('date-utils');
 
 function zeroStrip(s) {
 	return s.toString().replace(/^0+/, '');
