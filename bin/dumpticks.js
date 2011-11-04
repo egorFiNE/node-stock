@@ -4,7 +4,7 @@ process.env.TZ = process.argv.indexOf('--cme')>=0 ?
 	'America/Chicago' : 
 	'America/New_York';
 
-require('node-date');
+require('date-utils');
 require(__dirname+'/../ExtraDate');
 require(__dirname+'/../ExtraNumber');
 TickStorage = require(__dirname+'/../TickStorage');
