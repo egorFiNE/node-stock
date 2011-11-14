@@ -83,7 +83,13 @@ MinuteIndex.prototype.toGzip = function() {
 }
 
 MinuteIndex.prototype.fromGzip = function(buffer) {
-	var uncompressed = uncompress(buffer);
+	var uncompressed;
+	try { 
+		uncompressed = uncompress(buffer);
+	} catch (e) { 
+		return false;
+	}
+	
 	if (!uncompressed) {
 		return false;
 	}
@@ -323,7 +329,11 @@ TickStorage.prototype.load = function() {
 	fs.readSync(fd, buffer, 0, buffer.length, headerAndMinuteIndexLength);
 	fs.closeSync(fd);
 	
-	this._bufferData = uncompress(buffer);
+	try { 
+		this._bufferData = uncompress(buffer);
+	} catch (e) { 
+		return false;
+	}
 	delete buffer;
 	
 	return this._bufferData ? true : false;
