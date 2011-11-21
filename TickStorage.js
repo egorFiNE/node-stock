@@ -115,7 +115,7 @@ function TickStorage(dbPath, symbol, daystamp) {
 	this._endUnixtime = this._startUnixtime+86400;
 	
 	this._path = dbPath+'/'+symbol+'/';
-	this._filename = this._path+this._daystamp+'.ticks';
+	this._filename = this._daystamp+'.ticks';
 	
 	this._bufferData = null; 
 	this.minuteIndex = null;
@@ -164,7 +164,7 @@ TickStorage.prototype._int2buf = function(offset, num) {
 }
 
 TickStorage.prototype.exists = function() {
-	return path.existsSync(this._filename);
+	return path.existsSync(this._path+this._filename);
 }
 
 TickStorage.prototype.tellMinute = function() {
@@ -222,7 +222,7 @@ TickStorage.prototype.save = function(quick) {
 		this.generateMinuteIndex();
 	}
 	
-	var minuteIndexBuffer = this.minuteIndex.toGzip();
+	var bufferMinuteIndex = this.minuteIndex.toGzip();
 	
 	var header = {
 		version: TickStorage.CURRENT_VERSION,
@@ -232,7 +232,7 @@ TickStorage.prototype.save = function(quick) {
 		marketOpenPos: this.marketOpenPos,
 		marketClosePos: this.marketClosePos,
 		additionalData: this.additionalData,
-		minuteIndexSize: minuteIndexBuffer.length
+		minuteIndexSize: bufferMinuteIndex.length
 	};
 	
 	if (this._bufferData) {
@@ -240,36 +240,39 @@ TickStorage.prototype.save = function(quick) {
 			return false;
 		}
 		
-		var fd = fs.openSync(this._filename+".tmp", "w");
+		var fd = fs.openSync(this._path+this._filename+".tmp", "w");
 		
 		if (this.count>0) {
 			var bytesLength = this.count*TickStorage.ENTRY_SIZE;
 			
-			var bufferWithData = this._bufferData.slice(0, bytesLength);
-			var bufferToWrite = compress(bufferWithData);
-
-			this._saveHeader(fd, header);
+			var bufferCompressed = compress(this._bufferData.slice(0, bytesLength));
+			var bufferHeader = this._generateHeader(fd, header);
 			
-			fs.writeSync(fd, minuteIndexBuffer, 0, minuteIndexBuffer.length);
-			fs.writeSync(fd, bufferToWrite, 0, bufferToWrite.length);
+			var targetBuffer = new Buffer(bufferHeader.length + bufferMinuteIndex.length + bufferCompressed.length);
+			bufferHeader.copy(targetBuffer);
+			bufferMinuteIndex.copy(targetBuffer, bufferHeader.length);
+			bufferCompressed.copy(targetBuffer, bufferHeader.length + bufferMinuteIndex.length);
+			
+			fs.writeSync(fd, targetBuffer, 0, targetBuffer.length);
 		} else { 
 			// despite that it exists it's not stored, so do not confuse
 			// any software with it's fake size
 			header.minuteIndexSize = 0; 
-			this._saveHeader(fd, header);
+			var bufferHeader = this._generateHeader(fd, header);
+			fs.writeSync(fd, bufferHeader, 0, bufferHeader.length);
 		}
 		fs.closeSync(fd);
 
-		if (path.existsSync(this._filename)) {
+		if (path.existsSync(this._path+this._filename)) {
 			try {
-				fs.unlinkSync(this._filename);
+				fs.unlinkSync(this._path+this._filename);
 			} catch (e) {
 				return false;
 			}
 		}
 
 		try { 
-			fs.renameSync(this._filename+".tmp", this._filename);
+			fs.renameSync(this._path+this._filename+".tmp", this._path+this._filename);
 		} catch (e) {
 			return false;
 		}
@@ -278,16 +281,16 @@ TickStorage.prototype.save = function(quick) {
 	return true;
 }
 
-TickStorage.prototype._saveHeader = function(fd, header) {
+TickStorage.prototype._generateHeader = function(fd, header) {
 	var bufHeader = new Buffer(TickStorage.HEADER_SIZE);
 	bufHeader.fill(0);
 	bufHeader.write(JSON.stringify(header)+"\n",0,'ascii');
-	fs.writeSync(fd, bufHeader, 0, bufHeader.length);
+	return bufHeader; 
 }
 
 TickStorage.prototype.remove = function() {
 	try { 
-		fs.unlinkSync(this._filename);
+		fs.unlinkSync(this._path+this._filename);
 	} catch(e) {
 	}
 }
@@ -300,7 +303,7 @@ TickStorage.prototype.load = function() {
 
 	var fd;
 	try { 
-		fd = fs.openSync(this._filename, "r");
+		fd = fs.openSync(this._path+this._filename, "r");
 	} catch (e) {
 		return false;
 	}
