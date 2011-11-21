@@ -149,20 +149,6 @@ TickStorage.prototype.getSymbol = function() {
 	return this._symbol;
 }
 
-TickStorage.prototype._buf2int = function(offset) {
-	return this._bufferData[0+offset] +
-		(this._bufferData[1+offset] << 8) +
-		(this._bufferData[2+offset] << 16) +
-		(this._bufferData[3+offset] << 24);
-}
-
-TickStorage.prototype._int2buf = function(offset, num) {
-	this._bufferData[0+offset] = num;
-	this._bufferData[1+offset] = num >> 8;
-	this._bufferData[2+offset] = num >> 16;
-	this._bufferData[3+offset] = num >> 24;
-}
-
 TickStorage.prototype.exists = function() {
 	return path.existsSync(this._path+this._filename);
 }
@@ -436,10 +422,10 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disa
 	}
 
 	var offset = this.position * TickStorage.ENTRY_SIZE;
-	this._int2buf(offset, unixtime);
-	this._int2buf(offset+4, volume);
-	this._int2buf(offset+8, price);
-	this._bufferData[offset+12] = isMarket?1:0;
+	this._bufferData.writeUInt32LE(unixtime, offset);
+	this._bufferData.writeUInt32LE(volume, offset+4);
+	this._bufferData.writeUInt32LE(price, offset+8);
+	this._bufferData.writeUInt8(isMarket?1:0, offset+12);
 
 	if (isMarket) { 
 		if (this.marketOpenPos===null) {
@@ -520,10 +506,10 @@ TickStorage.prototype._tickAtOffset = function(offset) {
 	}
 	
 	return {
-		unixtime: this._buf2int(offset),
-		volume: this._buf2int(offset+4),
-		price: this._buf2int(offset+8),
-		isMarket: this._bufferData[offset+12] == 1
+		unixtime: this._bufferData.readUInt32LE(offset),
+		volume: this._bufferData.readUInt32LE(offset+4),
+		price: this._bufferData.readUInt32LE(offset+8), 
+		isMarket: this._bufferData.readUInt8(offset+12) == 1 
 	}
 }
 
