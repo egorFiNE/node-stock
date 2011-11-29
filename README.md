@@ -58,6 +58,7 @@ All prices in **node-stock** and derived software are stored in integer in 1/100
 
 **2.** Set <code>process.env.TZ</code> right at the start of your script before making anything else, especially before calling any Date methods: 
 
+```javascript
 	process.env.TZ='America/New_York';
 	console.log("Hello at %s", new Date());
 
@@ -67,12 +68,14 @@ All prices in **node-stock** and derived software are stored in integer in 1/100
 	require('stock/ExtraLog');
 	process.env.TZ='America/New_York';
 	ExtraLog.log("Hello at %D", Date.unixtime());
+```
 
 # Requirements
 
 * **Node.js** &gt;= 0.6.0; s
 * **node-date-utils** https://github.com/JerrySievert/node-date-utils or <code>npm install date-utils</code>;
 * **node-compress-buffer** https://github.com/egorFiNE/node-compress-buffer or <code>npm install compress-buffer</code>;
+* **optimist** https://github.com/substack/node-optimist.git or <code>npm install optimist</code>; 
 * **nodeunit** for unit testing; 
 
 **Note:** nodeunit must be launched in New York time zone: 
@@ -81,7 +84,7 @@ All prices in **node-stock** and derived software are stored in integer in 1/100
 
 # Installation
 
-<code>npm install stock</code>. FIXME.
+<code>npm install stock</code>.
 
 # FAQ
 
@@ -190,6 +193,6 @@ If you are redistributing **node-stock**, please consider it GPLv2 licensed.
 
 If neither option is good for you, I can sell you a commercial license, which also includes my personal support. Contact me by email. 
 
-*** 
+# Contacts
 
-© 2010-2011 Egor Egorov, me@egorfine.com. 
+**node-stock** is created by Egor Egorov, me@egorfine.com. I welcome your comments and suggestions, please feel free to drop me an email. 
