@@ -1,0 +1,150 @@
+<html>
+	<head>
+		<title>ExtraDate.js</title>
+		<style>
+			* { 
+				font-family: sans-serif;
+			}
+
+			body {
+				font-size: 12px;
+			}
+
+			.type {
+				color: gray;
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			code {
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			pre {
+				padding: 2em 1.6em 2em 1.2em;
+				background: #F8F8F8;
+				border: 1px solid #E8E8E8;
+				border-width: 1px 1px 1px 6px;
+			}
+
+			.static {
+				font-weight: normal;
+				color: #d0d0d0;
+			}
+
+			.parameter {
+				color: #5080FF;
+			}
+		</style>
+	</head>
+	<body>
+		<h2><span class="class">Date</span></h2>
+
+<p>Various date methods useful for stock trading. </p>
+
+<p>Yes, I know that it is not good to augment built-in types, but I have considered all pros and cons and 
+decided to pick this solution anyway.</p>
+
+<p>A <strong>daystamp</strong> is a date format in form of "YYYYMMDD". It's used through all the node-stock package. It could
+be specified both in string or integer and all the methods and functions must accept either type 
+(mind <code>.toString()</code> and <code>parseInt()</code> for easy implementation). </p>
+
+<h3>Date.parseDaystamp(<span class="parameter">daystamp</span>)  <span class="static">static</span></h3>
+
+<p>Parse daystamp into Date. It's a factory method. </p>
+
+<ul><li><code><strong>daystamp</strong></code> &#8212; daystamp to parse</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Date</span></code> date parsed from daystamp, time set to 00:00:00</li></ul>
+
+<h3>daystamp()</h3>
+
+<p>Return daystamp representation of a Date.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">String</span></code> daystamp</li></ul>
+
+<h3>Date.parseUnixtime(<span class="parameter">unixtime</span>)  <span class="static">static</span></h3>
+
+<p>Parse unixtime into Date. It's a factory method. </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>unixtime</strong></code> &#8212; unixtime to parse.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Date</span></code> parsed date object with correct time set.</li></ul>
+
+<h3>unixtime()</h3>
+
+<p>Return unixtime representation of a Date. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> unixtime.</li></ul>
+
+<h3>Date.unixtime()  <span class="static">static</span></h3>
+
+<p>Return current unixtime. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> current unixtime.</li></ul>
+
+<h3>Date.fillEmptyDays(<span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
+
+<p>Return an array of Dates between two days, not inclusive. </p>
+
+<ul><li><code><span class="type">Date</span></code> <code><strong>from</strong></code> &#8212; starting day</li><li><code><span class="type">Date</span></code> <code><strong>to</strong></code> &#8212; ending day</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Array</span></code> array of Dates between those.</li></ul>
+
+<p>Example: </p>
+
+<pre><code>var from = new Date('2011-06-15');
+var to   = new Date('2011-06-18');
+var days = Date.fillEmptyDays(from, to);
+// days == [new Date('2011-06-16'), new Date('2011-06-17')]; </code></pre>
+
+<h3>getDayName()</h3>
+
+<p>Get short human readable day name for given Date, like "Sun", "Mon", ...</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">String</span></code> day name.</li></ul>
+
+<h3>setCurrentDayMinute(<span class="parameter">minute</span>)</h3>
+
+<p>Set given Date's time to a day minute specified. A day minute is zero-based number of minute in a day, 
+e.g. 570 for 9:30. </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>minute</strong></code> &#8212; day minute to set as time. </li></ul>
+
+<h3>getCurrentDayMinute()</h3>
+
+<p>Get current day minute of a given Date. A day minute is zero-based number of minute in a day, 
+e.g. 570 for 9:30. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> day minute</li></ul>
+
+<h3>Date.minuteToFormat(<span class="parameter">minute</span>, <span class="parameter">format</span>)  <span class="static">static</span></h3>
+
+<p>A helper function. Format given day minute according to format (see date-utils format specifiers). </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>minute</strong></code> &#8212; day minute </li><li><code><span class="type">String</span></code> <code><strong>format</strong></code> &#8212; date-utils format specifier</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">String</span></code> formatted time</li></ul>
+
+<p>Example: </p>
+
+<pre><code>Date.minuteToFormat(571, 'H24:MI:SS'); // "9:31"</code></pre>
+	</body>
+</html>

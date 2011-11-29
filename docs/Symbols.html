@@ -1,0 +1,99 @@
+<html>
+	<head>
+		<title>Symbols.js</title>
+		<style>
+			* { 
+				font-family: sans-serif;
+			}
+
+			body {
+				font-size: 12px;
+			}
+
+			.type {
+				color: gray;
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			code {
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			pre {
+				padding: 2em 1.6em 2em 1.2em;
+				background: #F8F8F8;
+				border: 1px solid #E8E8E8;
+				border-width: 1px 1px 1px 6px;
+			}
+
+			.static {
+				font-weight: normal;
+				color: #d0d0d0;
+			}
+
+			.parameter {
+				color: #5080FF;
+			}
+		</style>
+	</head>
+	<body>
+		<h2><span class="class">Symbols</span></h2>
+
+<p>Represents ticks database. Essentially this is just a wrapper around a 
+list of folders whose names are uppercase symbol names.</p>
+
+<ul><li><code><span class="type">String</span></code> <code><strong>dbPath</strong></code> &#8212; - path to the ticks database.</li></ul>
+
+<p>Example: </p>
+
+<pre><code>var symbols = new Symbols('/home/tickers');
+if (!symbols.load()) {
+	console.log("Oops?");
+	return;
+}
+
+var symbol;
+while ((symbol=symbols.next())) {
+	console.log("Symbol: %s", symbol.symbol);
+}</code></pre>
+
+<h3>load()</h3>
+
+<p>Load list of tickers from the database. Essentially will load all directory names from dbpath, skipping some specials.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> true if successfully loaded.</li></ul>
+
+<h3>exists(<span class="parameter">symbol</span>)</h3>
+
+<p>Checks if the symbol exists in the database. Essentially checks if the folder with such a name (uppercased)
+exists in dbpath. </p>
+
+<ul><li><code><span class="type">String</span></code> <code><strong>symbol</strong></code> &#8212; - the symbol name to check.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> </li></ul>
+
+<h3>rewind()</h3>
+
+<p>Rewind the iterator position back to zero. </p>
+
+<h3>next()</h3>
+
+<p>Get the next symbol from iterator. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Symbol</span></code> the Symbol object created. It's your duty to call <code>load()</code> on it.</li></ul>
+
+<h3>count()</h3>
+
+<p>Will return the count of symbols in tickers database.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> </li></ul>
+	</body>
+</html>

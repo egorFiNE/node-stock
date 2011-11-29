@@ -1,0 +1,89 @@
+<html>
+	<head>
+		<title>WorkingDays.js</title>
+		<style>
+			* { 
+				font-family: sans-serif;
+			}
+
+			body {
+				font-size: 12px;
+			}
+
+			.type {
+				color: gray;
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			code {
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			pre {
+				padding: 2em 1.6em 2em 1.2em;
+				background: #F8F8F8;
+				border: 1px solid #E8E8E8;
+				border-width: 1px 1px 1px 6px;
+			}
+
+			.static {
+				font-weight: normal;
+				color: #d0d0d0;
+			}
+
+			.parameter {
+				color: #5080FF;
+			}
+		</style>
+	</head>
+	<body>
+		<h2><span class="class">WorkingDays</span></h2>
+
+<p>This static class holds date calculation functions needed to figure out working days and holidays for various
+exchanges.</p>
+
+<p>See source code for holidays array. </p>
+
+<h3>WorkingDays.isNyseHoliday(<span class="parameter">day</span>)  <span class="static">static</span></h3>
+
+<p>Check if given date is a holiday at NYSE.</p>
+
+<ul><li><code><span class="type">Date</span></code> <code><strong>day</strong></code> &#8212; date to check.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> </li></ul>
+
+<h3>WorkingDays.isWeekend(<span class="parameter">day</span>)  <span class="static">static</span></h3>
+
+<p>Check if a given date is a Sunday or Saturday. </p>
+
+<ul><li><code><span class="type">Date</span></code> <code><strong>day</strong></code> &#8212; date to check.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> </li></ul>
+
+<h3>WorkingDays.isNyseWorkingDay(<span class="parameter">day</span>)  <span class="static">static</span></h3>
+
+<h3>WorkingDays.prevNyseDay(<span class="parameter">day</span>)  <span class="static">static</span></h3>
+
+<p>Return previous trading day at NYSE for the given date. </p>
+
+<ul><li><code><span class="type">Date</span></code> <code><strong>day</strong></code> &#8212; date for which to find the previous trading day.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Date</span></code> previous trading day.</li></ul>
+
+<h3>WorkingDays.nextNyseDay(<span class="parameter">day</span>)  <span class="static">static</span></h3>
+
+<p>Return next trading day at NYSE for the given date. </p>
+
+<ul><li><code><span class="type">Date</span></code> <code><strong>day</strong></code> &#8212; date for which to find the next trading day.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Date</span></code> next trading day.</li></ul>
+	</body>
+</html>

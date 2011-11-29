@@ -1,0 +1,64 @@
+<html>
+	<head>
+		<title>MinuteIndex.js</title>
+		<style>
+			* { 
+				font-family: sans-serif;
+			}
+
+			body {
+				font-size: 12px;
+			}
+
+			.type {
+				color: gray;
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			code {
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			pre {
+				padding: 2em 1.6em 2em 1.2em;
+				background: #F8F8F8;
+				border: 1px solid #E8E8E8;
+				border-width: 1px 1px 1px 6px;
+			}
+
+			.static {
+				font-weight: normal;
+				color: #d0d0d0;
+			}
+
+			.parameter {
+				color: #5080FF;
+			}
+		</style>
+	</head>
+	<body>
+		<h2><span class="class">MinuteIndex</span></h2>
+
+<p>Internal class used by TickStorage to index minute data within a single ticks file. </p>
+
+<p>About the only thing you may be interested in here is the <code>.index[]</code> array 
+which contains an array of minutes, from 0 to 1440-1. Each entry is a hash with the 
+following keys: </p>
+
+<ul><li><strong>o</strong>: position of the first tick in this minute (see <code>TickStorage.position</code>);</li><li><strong>c</strong>: position of the last tick in this minute;</li><li><strong>v</strong>: total volume in this minute;</li><li><strong>h</strong>: high for this minute;</li><li><strong>l</strong>: low for this minute;</li></ul>
+
+<p>For aftermarket minutes only the <code>o</code> and <code>c</code> are stored with <code>v</code> set to <code>0</code>
+and <code>h</code> and <code>l</code> set to <code>null</code>.</p>
+
+<p>If there were no data at all for a certain minute within the day, then <code>index[minute]</code> will be <code>null</code>. </p>
+
+<p>You can access the instance of Minute Index as <code>TickStorage.minuteIndex[]</code>. So use 
+<code>TickStorage.minuteIndex.index[minute]</code> to get to the minute data. </p>
+
+<h3>dump(<span class="parameter">fromMinute</span>, <span class="parameter">toMinute</span>)</h3>
+
+<p>Handy developer tool: dump minute index in human-readable format. </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>fromMinute</strong></code> &#8212; begin dump since this minute, default = 0;</li><li><code><span class="type">Integer</span></code> <code><strong>toMinute</strong></code> &#8212; end the dump with this minue, default = 1440-1.</li></ul>
+	</body>
+</html>

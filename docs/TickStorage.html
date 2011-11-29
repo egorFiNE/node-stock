@@ -1,0 +1,231 @@
+<html>
+	<head>
+		<title>TickStorage.js</title>
+		<style>
+			* { 
+				font-family: sans-serif;
+			}
+
+			body {
+				font-size: 12px;
+			}
+
+			.type {
+				color: gray;
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			code {
+				font-family: Monaco, Consolas, "Lucida Console", monospace;
+			}
+
+			pre {
+				padding: 2em 1.6em 2em 1.2em;
+				background: #F8F8F8;
+				border: 1px solid #E8E8E8;
+				border-width: 1px 1px 1px 6px;
+			}
+
+			.static {
+				font-weight: normal;
+				color: #d0d0d0;
+			}
+
+			.parameter {
+				color: #5080FF;
+			}
+		</style>
+	</head>
+	<body>
+		<h2><span class="class">TickStorage</span></h2>
+
+<p>Raw ticks storage. </p>
+
+<p>Ticks are stored on disk and in memory in a highly-efficient, extremely compact and fast format. Each trading 
+day is stored in a separate file named with a plain daystamp and ".ticks" extension. </p>
+
+<p>Each file starts with a single line JSON header, which is handy to lookup in shell:</p>
+
+<pre><code>head -1 20110801.ticks</code></pre>
+
+<p>The file path is composed of all three parameters: dbPath/symbol/daystamp.ticks. </p>
+
+<ul><li><code><span class="type">String</span></code> <code><strong>dbPath</strong></code> &#8212; path to ticks database;</li><li><code><span class="type">String</span></code> <code><strong>symbol</strong></code> &#8212; symbol to load;</li><li><code><span class="type">String</span></code> <code><strong>daystamp</strong></code> &#8212; day to load or create.</li></ul>
+
+<p>Typical read example: </p>
+
+<pre><code>var tickStorage = new TickStorage('/home/tickers', 'AAPL', 20111019);
+if (!tickStorage.load()) {
+	console.log("Oops?");
+}
+
+var tick;
+while ((tick=tickStorage.nextTick())) {
+	if (!tick.isMarket) {  
+		continue;
+	}
+
+	ExtraLog.log("%T: %d @ %p", 
+		tick.unixtime,  // integer trade unixtime 
+		tick.volume,    // integer trade volume
+		tick.price      // integer tick price
+	);
+}</code></pre>
+
+<p>Typical create/write example: </p>
+
+<pre><code>var tickStorage = new TickStorage('/home/tickers', 'AAPL', 20111019);
+tickStorage.prepareForNew();
+
+tickStorage.addTick(unixtime, 100, 233700, true);
+tickStorage.addTick(unixtime, 100, 233700, true);
+...
+
+if (!tickStorage.save()) {
+	console.log("Oops?!");
+}</code></pre>
+
+<p><strong>Note:</strong> you cannot reuse TickStorage that was just created and stored. TickStorage instance is not 
+read/write so if you have just created a tick file, you will have to reload it from disk in order to read
+it. Something like that: </p>
+
+<pre><code>...
+if (!tickStorage.save()) {
+	console.log("Oops?!");
+}
+
+tickStorage = new TickStorage('/home/tickers', 'AAPL', 20111019);
+if (!tickStorage.load()) {
+	console.log("Oops?!");
+}
+
+// now you can read! </code></pre>
+
+<p>Each <strong>tick entry</strong> is a hash that consists of: </p>
+
+<ul><li><strong>isMarket</strong> boolean, true for market ticks and false for aftermarket;</li><li><strong>unixtime</strong> integer, cannot be zero or null;</li><li><strong>volume</strong> integer, can be zero in rare cases the stock exchange sent us such a tick;</li><li><strong>price</strong> integer, can be zero in rare cases the stock exchange sent us such a tick;</li></ul>
+
+<h3>filterMarketTime()</h3>
+
+<p>Filter out aftermarket time. After this call <code>TickStorage.nextTick()</code> will only return market ticks. </p>
+
+<h3>getSymbol()</h3>
+
+<p>Returns symbol name.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">String</span></code> </li></ul>
+
+<h3>exists()</h3>
+
+<p>Return true if this file exists in tick database.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> </li></ul>
+
+<h3>tellMinute()</h3>
+
+<p>Will return the day minute to which the current position points to. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> day minute.</li></ul>
+
+<h3>seekToMinute(<span class="parameter">minute</span>)</h3>
+
+<p>Seek to the first tick of that day minute.</p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>minute</strong></code> &#8212; day minute to seek to. </li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> true if we could successfully seek to that minute (i.e. if it exists in tick data); false otherwise</li></ul>
+
+<h3>rewind()</h3>
+
+<p>Seek to the first tick.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> <code>null</code> if we couldn't seek to it; new position otherwise.</li></ul>
+
+<h3>seek(<span class="parameter">ticks</span>, <span class="parameter">whence</span>)</h3>
+
+<p>Seek to the position in ticks. </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>ticks</strong></code> &#8212; ticks to seek to, can be negative depending on <code>whence</code>;</li><li><code><strong>whence</strong></code> &#8212; how to seek to. Think unix's <code>fseek()</code> call. Whence can be one of: <code>TickStorage.SEEK_SET</code>, <code>TickStorage.SEEK_CUR</code>, <code>TickStorage.SEEK_END</code>.</li></ul>
+
+<p>If <code>whence</code> is <code>TickStorage.SEEK_SET</code>, then the <code>ticks</code> parameter is relative to the 
+beginning of file (and should not be negative). If <code>whence</code> is <code>TickStorage.SEEK_CUR</code>, 
+then the <code>ticks</code> parameter is relative to the current position. If <code>whence</code> is 
+<code>TickStorage.SEEK_END</code>, then the <code>ticks</code> parameter is relative to the last position (and should not
+be positive).</p>
+
+<p>This method is smart, it won't let you seek past the beginning or the end of file. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Integer</span></code> new position or <code>null</code> if we couldn't seek.</li></ul>
+
+<h3>save(<span class="parameter">quick</span>)</h3>
+
+<p>Save newly created tick file. </p>
+
+<ul><li><code><span class="type">Boolean</span></code> <code><strong>quick</strong></code> &#8212; if set then no index will be regenerated. <strong>Use with care.</strong> It's actually only needed in certain cases if you are rebuilding already existing ticks file. </li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> true if save was successful, guess what otherwise.</li></ul>
+
+<p><strong>Note:</strong> you cannot reuse newly saved TickStorage, you have to reload it. </p>
+
+<h3>remove()</h3>
+
+<p>Remove ticks file. Will not return anything and won't complain on errors.</p>
+
+<h3>load()</h3>
+
+<p>Load ticks file. </p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Boolean</span></code> true in case of success, false otherwise.</li></ul>
+
+<h3>prepareForNew(<span class="parameter">megs</span>)</h3>
+
+<p>Prepare TickStorage for creation of a new ticks file. You must only call this method on a fresh TickStorage instance. </p>
+
+<p>@params {Integer} megs how many megabytes of RAM to preallocate for tick storage. Each tick takes 13 bytes, so allocate wisely. By default it's 100MB which should be enough for everyone. </p>
+
+<h3>addTick(<span class="parameter">unixtime</span>, <span class="parameter">volume</span>, <span class="parameter">price</span>, <span class="parameter">isMarket</span>, <span class="parameter">disableOrphanLogic</span>)</h3>
+
+<p>Add another brick in the wall. </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>unixtime</strong></code> &#8212; unixtime;</li><li><code><span class="type">Integer</span></code> <code><strong>volume</strong></code> &#8212; volume;</li><li><code><span class="type">Integer</span></code> <code><strong>price</strong></code> &#8212; price;</li><li><code><span class="type">Boolean</span></code> <code><strong>isMarket</strong></code> &#8212; true for market ticks, false or undefined for aftermarket;</li><li><code><span class="type">Boolean</span></code> <code><strong>disableOrphanLogic</strong></code> &#8212; only set to true in case of terrorist attack.</li></ul>
+
+<p>"Orphan logic" is prevention against weird ticks from the distant past or distant future. It also filters out
+duplicate ticks from the distant past or future. Orphan ticks are moved into their respective positions in ticks
+history, making it consistent. Actually never disable this logic unless you are doing conversion
+of ticks database from one format to another. </p>
+
+<h3>tickAtPosition(<span class="parameter">position</span>)</h3>
+
+<p>Return tick entry at position. </p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>position</strong></code> &#8212; position.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li>Tick entry or null.</li></ul>
+
+<h3>nextTick()</h3>
+
+<p>An iterator. Get next tick entry or null. </p>
+
+<p>Returns:</p>
+
+<ul><li>tick entry or null.</li></ul>
+	</body>
+</html>
