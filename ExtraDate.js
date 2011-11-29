@@ -54,11 +54,6 @@ Date.prototype.getDayName = function() {
 	return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][this.getDay()];
 }
 
-Date.prototype.isNyseMarketTime = function() {
-	var m = this.getCurrentDayMinute();
-	return (m>=570 && m<960)
-}
-
 Date.prototype.setCurrentDayMinute = function(minute) {
 	var hours = Math.floor(minute/60);
 	var minutes = minute-hours*60;
