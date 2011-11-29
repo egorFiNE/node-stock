@@ -1,6 +1,6 @@
 {
 	"name": "stock",
-	"description": "node-stock",
+	"description": "A fast and efficient Node.js storage engine for stock market tick data and couple of modules for trading software development.",
 	"version": "0.0.8",
 	"author": "Egor Egorov <me@egorfine.com>",
 	"homepage": "http://egorfine.github.com/node-stock",
@@ -13,7 +13,8 @@
 	},
 	"dependencies": { 
 		"compress-buffer": ">= 0.5.1",
-		"date-utils": ">= 1.2.5"
+		"date-utils": ">= 1.2.5",
+		"optimist": ">= 0.2.8"
 	},
 	"devDependencies": {
 		"nodeunit": ">= 0.6.0"
