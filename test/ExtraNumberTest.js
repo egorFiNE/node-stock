@@ -37,3 +37,8 @@ exports['check float errors'] = function(test) {
 	test.done();
 };
 
+
+exports['human-readable number'] = function(test) {
+	test.equal(parseInt(23.34*10000).humanReadablePrice(), "23.34");
+	test.done();
+}
