@@ -87,7 +87,7 @@ function TickStorage(dbPath, symbol, daystamp) {
 	this._dbPath = dbPath;
 	this._symbol = symbol.toUpperCase();
 
-	this._daystamp = daystamp;
+	this._daystamp = (daystamp || '');
 
 	var day = Date.parseDaystamp(this._daystamp);
 	this._startUnixtime = day.unixtime();
