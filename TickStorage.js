@@ -9,7 +9,7 @@ MinuteIndex = require('./MinuteIndex');
 
 /** 
 
-Raw ticks storage module. 
+Raw ticks storage. 
 
 Ticks are stored on disk and in memory in a highly-efficient, extremely compact and fast format. Each trading 
 day is stored in a separate file named with a plain daystamp and ".ticks" extension. 
