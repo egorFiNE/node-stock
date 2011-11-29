@@ -45,3 +45,18 @@ exports['minutes helper'] = function(test) {
 	test.equal(Date.minuteToFormat(400,  'HH24:MI'), '06:40');
 	test.done();
 }
+
+exports['fill empty days'] = function(test) {
+	test.expect(1);
+	
+	var from = Date.parseDaystamp(20110615);
+	var to   = Date.parseDaystamp(20110618)
+	var days = Date.fillEmptyDays(from, to);
+	
+	days = days.map(function(d) {
+		return d.daystamp();
+	});
+	
+	test.deepEqual(days, ['20110616', '20110617']);
+	test.done();
+}
