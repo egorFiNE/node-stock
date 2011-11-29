@@ -39,6 +39,9 @@ TickStorage.HEADER_SIZE=1024;
 TickStorage.ENTRY_SIZE=13;
 TickStorage.CURRENT_VERSION=1;
 
+TickStorage.SEEK_SET = 1;
+TickStorage.SEEK_CUR = 2;
+TickStorage.SEEK_END = 3;
 TickStorage.prototype.filterMarketTime = function() {
 	this.marketTimeOnly = true;
 	if (this.position < this.marketOpenPos) {
