@@ -129,13 +129,13 @@ exports['first and last minutes']= function(test) {
 	
 	t = new TimePeriod('9-10');
 	test.ok(t.isValid);
-	test.equal(t.getFirstLastMinutes()[0], 9*60);
-	test.equal(t.getFirstLastMinutes()[1], 10*60-1);
+	test.equal(t.getFirstMinute(), 9*60);
+	test.equal(t.getLastMinute(), 10*60-1);
 	
 	t = new TimePeriod('9-10,13:00-16:30');
 	test.ok(t.isValid);
-	test.equal(t.getFirstLastMinutes()[0], 9*60);
-	test.equal(t.getFirstLastMinutes()[1], 16*60+30-1);
+	test.equal(t.getFirstMinute(), 9*60);
+	test.equal(t.getLastMinute(), 16*60+30-1);
 	
 	test.done();
 }

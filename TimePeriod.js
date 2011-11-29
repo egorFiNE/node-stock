@@ -108,20 +108,27 @@ TimePeriod.prototype.isMinuteIn = function(minute) {
 	return this._periods[minute];
 }
 
-TimePeriod.prototype.getFirstLastMinutes = function() {
+
+TimePeriod.prototype.getFirstMinute = function() {
 	var i;
-	var firstMinute=Number.MAX_VALUE;
-	var lastMinute=Number.MIN_VALUE;
 	for(i=0;i<=1440;i++) {
 		if (this._periods[i]) {
-			firstMinute = Math.min(firstMinute,i);
-			lastMinute = Math.max(lastMinute,i);
+			return i;
 		}
 	}
-	return [
-		firstMinute==Number.MAX_VALUE?0:firstMinute,
-		lastMinute==Number.MIN_VALUE?1339:lastMinute
-	];
+	
+	return 0;
+}
+
+TimePeriod.prototype.getLastMinute = function() {
+	var lastMinute=null;
+	var i;
+	for(i=0;i<=1440;i++) {
+		if (this._periods[i]) {
+			lastMinute = i;
+		}
+	}
+	return lastMinute==null?1339:lastMinute
 }
 
 TimePeriod.prototype.setMinute = function(m, enabled) {
@@ -133,12 +140,14 @@ TimePeriod.prototype.normalize = function() {
 		return '';
 	}
 	
-	var minutes = this.getFirstLastMinutes();
+	var firstMinute = this.getFirstMinute();
+	var lastMinute = this.getLastMinute();
 	
 	var _periods=[];
 	
-	var m;var currentPeriodOpen=undefined;
-	for(m=minutes[0];m<=minutes[1];m++) {
+	var currentPeriodOpen=undefined;
+	var m;
+	for(m=firstMinute;m<=lastMinute;m++) {
 		if (this._periods[m]) {
 			if (!currentPeriodOpen) {
 				currentPeriodOpen=m;
@@ -151,7 +160,7 @@ TimePeriod.prototype.normalize = function() {
 		}
 	}
 	if (currentPeriodOpen) {
-		_periods.push([currentPeriodOpen, minutes[1]]);
+		_periods.push([currentPeriodOpen, lastMinute]);
 	}
 	
 	var _periodsStrings=[];
