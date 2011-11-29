@@ -1,10 +1,38 @@
 require('./ExtraNumber');
 require('./ExtraDate');
 
+/** 
+
+Actually it's a printf substitute with support for prices and unixtimes. Contains two functions. 
+
+*/
+
+// trick doc.js into thinking that we have declared the class. 
+/*
+function ExtraLog() {
+}
+*/
+
+ExtraLog = {};
+
 var formatRegExp = /%[sdjpTD%]/g;
 
+/** 
 
-function format(f) {
+Similar to <code>util.format()</code> but also supports the following tokens: 
+
+* **%p** human readable price;
+* **%D** the argument is a unixtime, print the daystamp of it;
+* **%T** the argument is a unixtime, print the time of it;
+
+Example: 
+	
+	var s = ExtraLog.format("%D %T sold at %p", 1322590084, 1322590084, 233700);
+	// 20111129 20:08:04 sold at 23.37
+
+ */
+
+ExtraLog.format = function(f) {
 	if (typeof f !== 'string') {
 		var objects = [];
 		for (var i = 0; i < arguments.length; i++) {
@@ -40,11 +68,17 @@ function format(f) {
 	return str;
 }
 
+/**
+
+Similar to <code>console.log</code> but uses <code>ExtraLog.format()</code>.
+
+ */
+
+ExtraLog.log = function() {
+	process.stdout.write(ExtraLog.format.apply(this, arguments) + '\n');
+}
 	
 module.exports = {
-	format: format,
-	
-	log: function() {
-		process.stdout.write(format.apply(this, arguments) + '\n');
-	}
+	format: ExtraLog.format,
+	log: ExtraLog.log
 };
