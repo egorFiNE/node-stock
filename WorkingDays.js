@@ -7,8 +7,12 @@ See source code for holidays array.
 
 */
 
+/*
 function WorkingDays() {
 }
+*/
+
+WorkingDays = {};
 
 WorkingDays.nyseHolidays = {
 	2010: {
