@@ -3,6 +3,7 @@ path = require('path');
 symbol = require('./Symbol');
 
 Symbols = function(dbPath) {
+function Symbols(dbPath) {
 	this.dbPath = dbPath;
 	this.symbols = [];
 }
