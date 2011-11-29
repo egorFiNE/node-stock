@@ -5,8 +5,6 @@ events = require('events');
 function CandlesCalculator(minutes) {
 	events.EventEmitter.call(this);
 	
-	this.debug=true;
-	
 	this.startUnixtime = 0;
 	this.lastPeriod=0;
 	
@@ -72,18 +70,11 @@ CandlesCalculator.prototype.addTick = function(unixtime, price, volume) {
 	var second = unixtime - this.startUnixtime;
 	var period = (second/this.periodLength) >> 0;
 	
-	if (this.debug) { 
-		//util.debug("in period "+period);
-	}
-	
 	if (this.lastPeriod==0) {
 		this.lastPeriod=period;
 	}
 	
 	if (period>this.lastPeriod) {
-		if (this.debug) {
-			//util.debug("Current period "+period+" is more than the last period "+this.lastPeriod);
-		}
 		this.emitCandle();
 		this.clearPeriod();
 		this.lastPeriod = period;
@@ -110,9 +101,6 @@ CandlesCalculator.prototype.emitCandle = function() {
 	var da = Date.parseUnixtime(seconds);
 	var HH = da.getHours();
 	var MM = da.getMinutes();
-	if (this.debug) {
-		//util.debug("Current period candle is not empty, so I emit at "+seconds+" which is "+HH+":"+MM);
-	}
 
 	this.emit('candle', HH, MM,
 		this.currentHigh, this.currentLow, this.currentOpen, this.currentClose, this.currentVolume, this.currenTicksCount
