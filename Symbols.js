@@ -30,7 +30,7 @@ Symbols.prototype.load = function() {
 }
 
 Symbols.prototype.exists = function(symbol) {
-	return this.symbols.indexOf(symbol) >= 0;
+	return this.symbols.indexOf((symbol || '').toUpperCase()) >= 0;
 }
 
 Symbols.prototype.rewind = function() {
