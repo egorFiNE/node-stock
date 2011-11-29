@@ -2,34 +2,34 @@ function TimePeriod(str) {
 	this.firstMinute=null;
 	this.lastMinute=null;
 	
-	this.periodString = (str || '').replace(/ +/g,'');
+	this._periodString = (str || '').replace(/ +/g,'');
 	if (!str || str==='') {
-		this.periods=[];
+		this._periods=[];
 		this.isValid=true;
 	} else { 
-		this.parse();
+		this._parse();
 	}
 	
-	this.baseUnixtime=0;
+	this._baseUnixtime=0;
 }
 
 module.exports = TimePeriod; 
 
-TimePeriod.prototype.parse = function() {
+TimePeriod.prototype._parse = function() {
 	this.isValid=true;
-	this.periods=[];
+	this._periods=[];
 
 	this.firstMinute=null;
 	this.lastMinute=null;
 
-	var periods = this.periodString.split(',');
+	var periods = this._periodString.split(',');
 	var i=0;
 	for(i=0;i<periods.length;i++) {
-		this.parseSinglePeriod(periods[i]);
+		this._parseSinglePeriod(periods[i]);
 	}
 	
 	for(var m=0;m<1440;m++) {
-		if (this.periods[m]) {
+		if (this._periods[m]) {
 			if (this.firstMinute==null) {
 				this.firstMinute=m;
 			}
@@ -38,19 +38,18 @@ TimePeriod.prototype.parse = function() {
 	}
 }
 
-
 TimePeriod.prototype._setUnixtime  = function(unixtime) {
 	var d = Date.parseUnixtime(unixtime);
 	d.clearTime();
-	this.baseUnixtime = d.unixtime();
+	this._baseUnixtime = d.unixtime();
 }
 
 TimePeriod.prototype.isUnixtimeIn = function(unixtime) {
-	if (!this.baseUnixtime) {
+	if (!this._baseUnixtime) {
 		this._setUnixtime(unixtime);
 	}
 	
-	var seconds = unixtime - this.baseUnixtime;
+	var seconds = unixtime - this._baseUnixtime;
 	var minute = parseInt(seconds/60);
 	return this.isMinuteIn(minute);
 }
@@ -76,7 +75,7 @@ TimePeriod.prototype.timeToMinute = function(timeString) {
 	return times[0]*60+times[1]*1;
 }
 
-TimePeriod.prototype.parseSinglePeriod = function(periodString) {
+TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 	if (periodString.match(/-$/)) {
 		this.isValid=false;
 		return;
@@ -110,7 +109,7 @@ TimePeriod.prototype.parseSinglePeriod = function(periodString) {
 	
 	var i=0;
 	for(i=startMinute;i<endMinute;i++) {
-		this.periods[i]=true;
+		this._periods[i]=true;
 	}
 }
 
@@ -123,7 +122,7 @@ TimePeriod.prototype.isHourMinuteIn = function(hour,minute) {
 }
 
 TimePeriod.prototype.isMinuteIn = function(minute) {
-	return this.periods[minute];
+	return this._periods[minute];
 }
 
 TimePeriod.prototype.getFirstLastMinutes = function() {
@@ -131,7 +130,7 @@ TimePeriod.prototype.getFirstLastMinutes = function() {
 	var firstMinute=Number.MAX_VALUE;
 	var lastMinute=Number.MIN_VALUE;
 	for(i=0;i<=1440;i++) {
-		if (this.periods[i]) {
+		if (this._periods[i]) {
 			firstMinute = Math.min(firstMinute,i);
 			lastMinute = Math.max(lastMinute,i);
 		}
@@ -143,7 +142,7 @@ TimePeriod.prototype.getFirstLastMinutes = function() {
 }
 
 TimePeriod.prototype.setMinute = function(m, enabled) {
-	this.periods[m] = enabled? true: false;
+	this._periods[m] = enabled? true: false;
 }
 
 TimePeriod.prototype.minuteToTime = function(m) {
@@ -162,7 +161,7 @@ TimePeriod.prototype.normalize = function() {
 	
 	var m;var currentPeriodOpen=undefined;
 	for(m=minutes[0];m<=minutes[1];m++) {
-		if (this.periods[m]) {
+		if (this._periods[m]) {
 			if (!currentPeriodOpen) {
 				currentPeriodOpen=m;
 			}
