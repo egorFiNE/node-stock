@@ -18,11 +18,11 @@ Each file starts with a single line JSON header, which is handy to lookup in she
 
 	head -1 20110801.ticks
 
+The file path is composed of all three parameters: dbPath/symbol/daystamp.ticks. 
+
 @param {String} dbPath path to ticks database;
 @param {String} symbol symbol to load;
 @param {String} daystamp day to load or create.
-
-The file path is composed of all three parameters: dbPath/symbol/daystamp.ticks. 
 
 Typical read example: 
 
@@ -33,7 +33,7 @@ Typical read example:
 
 	var tick;
 	while ((tick=tickStorage.nextTick())) {
-		if (!tick.isMarket) {  // isMarket is true for market ticks and false for aftermarket. 
+		if (!tick.isMarket) {  
 			continue;
 		}
 
@@ -72,6 +72,14 @@ it. Something like that:
 	}
 
 	// now you can read! 
+
+
+Each **tick entry** is a hash that consists of: 
+
+* **isMarket** boolean, true for market ticks and false for aftermarket;
+* **unixtime** integer, cannot be zero or null;
+* **volume** integer, can be zero in rare cases the stock exchange sent us such a tick;
+* **price** integer, can be zero in rare cases the stock exchange sent us such a tick;
 
  */
 
@@ -196,6 +204,24 @@ TickStorage.prototype.rewind = function() {
 	return this.seek(0, TickStorage.SEEK_SET);
 }
 
+/** 
+
+Seek to the position in ticks. 
+
+@param {Integer} ticks ticks to seek to, can be negative depending on <code>whence</code>;
+@param whence how to seek to. Think unix's <code>fseek()</code> call. Whence can be one of: <code>TickStorage.SEEK\_SET</code>, <code>TickStorage.SEEK\_CUR</code>, <code>TickStorage.SEEK\_END</code>.
+
+If <code>whence</code> is <code>TickStorage.SEEK\_SET</code>, then the <code>ticks</code> parameter is relative to the 
+beginning of file (and should not be negative). If <code>whence</code> is <code>TickStorage.SEEK\_CUR</code>, 
+then the <code>ticks</code> parameter is relative to the current position. If <code>whence</code> is 
+<code>TickStorage.SEEK\_END</code>, then the <code>ticks</code> parameter is relative to the last position (and should not
+be positive).
+
+This method is smart, it won't let you seek past the beginning or the end of file. 
+
+@return {Integer} new position or <code>null</code> if we couldn't seek. 
+
+ */
 TickStorage.prototype.seek = function(ticks, whence) {
 	if (ticks===undefined || !whence) {
 		return null;
@@ -240,6 +266,17 @@ TickStorage.prototype._possiblyCreatePath = function() {
 	return true;
 }
 
+/**
+
+Save newly created tick file. 
+
+@param {Boolean} quick if set then no index will be regenerated. **Use with care.** It's actually only needed in certain cases if you are rebuilding already existing ticks file. 
+
+@return {Boolean} true if save was successful, guess what otherwise. 
+
+**Note:** you cannot reuse newly saved TickStorage, you have to reload it. 
+
+ */
 TickStorage.prototype.save = function(quick) {
 	if (!quick) { 
 		this._orphanTicks.forEach(function(tick) {
@@ -250,7 +287,7 @@ TickStorage.prototype.save = function(quick) {
 
 		this._orphanTicks=[];
 
-		this.generateMinuteIndex();
+		this._generateMinuteIndex();
 	}
 	
 	var bufferMinuteIndex = this.minuteIndex.toGzip();
@@ -319,6 +356,12 @@ TickStorage.prototype._generateHeader = function(fd, header) {
 	return bufHeader; 
 }
 
+/**
+
+Remove ticks file. Will not return anything and won't complain on errors.
+
+ */
+
 TickStorage.prototype.remove = function() {
 	try { 
 		fs.unlinkSync(this._path+this._filename);
@@ -326,6 +369,13 @@ TickStorage.prototype.remove = function() {
 	}
 }
 
+/**
+
+Load ticks file. 
+
+@return {Boolean} true in case of success, false otherwise. 
+
+ */
 TickStorage.prototype.load = function() {
 	this.position=0;
 	this.count=0;
@@ -405,6 +455,14 @@ TickStorage.prototype._loadHeader = function(fd) {
 	}
 }
 
+/** 
+
+Prepare TickStorage for creation of a new ticks file. You must only call this method on a fresh TickStorage instance. 
+
+@params {Integer} megs how many megabytes of RAM to preallocate for tick storage. Each tick takes 13 bytes, so allocate wisely. By default it's 100MB which should be enough for everyone. 
+
+ */
+
 TickStorage.prototype.prepareForNew = function(megs) {
 	megs = parseInt(megs) || 100;
 	this._bufferData = new Buffer(1024*1024*megs);
@@ -429,6 +487,23 @@ TickStorage.prototype.prepareForNew = function(megs) {
 	this._orphanTicks=[];
 }
 
+/** 
+
+Add another brick in the wall. 
+
+@param {Integer} unixtime unixtime;
+@param {Integer} volume volume;
+@param {Integer} price price;
+@param {Boolean} isMarket true for market ticks, false or undefined for aftermarket;
+@param {Boolean} disableOrphanLogic only set to true in case of terrorist attack.
+
+"Orphan logic" is prevention against weird ticks from the distant past or distant future. It also filters out
+duplicate ticks from the distant past or future. Orphan ticks are moved into their respective positions in ticks
+history, making it consistent. Actually never disable this logic unless you are doing conversion
+of ticks database from one format to another. 
+
+ */
+
 TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disableOrphanLogic) {
 	if (unixtime<this._startUnixtime || unixtime>=this._endUnixtime) {
 		return;
@@ -451,7 +526,7 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disa
 				this._orphanTicks.push(this.tickAtPosition(z));
 			}
 			
-			this.dumpAdditionalTicks();
+			// this.dumpOrphanTicks();
 			
 			this._compressAdditionalTicks();
 
@@ -503,7 +578,7 @@ TickStorage.prototype._findPositionOfPreviousTickWithCloseUnixtime = function(un
 	return null;
 }
 
-TickStorage.prototype.generateMinuteIndex = function() {
+TickStorage.prototype._generateMinuteIndex = function() {
 	this.minuteIndex.resetIndex();
 	for (var pos=0;pos<this.count;pos++) {
 		var tick = this.tickAtPosition(pos);
@@ -511,7 +586,15 @@ TickStorage.prototype.generateMinuteIndex = function() {
 	}
 }
 
-TickStorage.prototype.dumpAdditionalTicks = function() {
+/**
+
+Internal development tool: dumps current orphan ticks in buffer. 
+
+@private
+
+ */
+
+TickStorage.prototype.dumpOrphanTicks = function() {
 	this._orphanTicks.forEach(function(entry) {
 		if (entry) { 
 			console.log(
@@ -536,6 +619,15 @@ TickStorage.prototype._compressAdditionalTicks = function() {
 	this._orphanTicks = clearPool;
 }
 
+/** 
+
+Return tick entry at position. 
+
+@param {Integer} position position.
+
+@return Tick entry or null.
+
+ */
 
 TickStorage.prototype.tickAtPosition = function(position) { 
 	if (position>=this.count) {
@@ -573,5 +665,18 @@ TickStorage.prototype._nextTickMarket = function() {
 	}
 	return tick;
 }
+
+/**
+
+An iterator. Get next tick entry or null. 
+
+@return tick entry or null.
+
+ */ 
+
+// trick doc.js: 
+/* 
+TickStorage.prototype.nextTick = function() { 
+ */
 
 module.exports = TickStorage;

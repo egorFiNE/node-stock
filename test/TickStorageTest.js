@@ -450,7 +450,7 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+1, 100, 2, true);
 	tickStorage.addTick(unixtime+2, 100, 3, true);
 
-	tickStorage.generateMinuteIndex();
+	tickStorage._generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute], {o: 0, c: 2, v: 300, h: 3, l: 1});
 
 	// next minute
@@ -458,13 +458,13 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+63, 100, 3, true);
 	tickStorage.addTick(unixtime+64, 400, 2, true);
 
-	tickStorage.generateMinuteIndex();
+	tickStorage._generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute+1], {o: 3, c: 5, v: 600, h: 4, l: 2});
 
 	// blast from the past
 	tickStorage.addTick(unixtime+1, 100, 8, true); 
 
-	tickStorage.generateMinuteIndex();
+	tickStorage._generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute], {o: 0, c: 6, v: 400, h: 8, l: 1});
 	test.deepEqual(tickStorage.minuteIndex.index[minute+1], {o: 3, c: 5, v: 600, h: 4, l: 2}); // the same
 
@@ -476,7 +476,7 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+124, 100, 4, true);
 	tickStorage.addTick(unixtime+125, 100, 9, false);
 
-	tickStorage.generateMinuteIndex();
+	tickStorage._generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute+2], {o: 7, c: 12, v: 300, h: 7, l: 4});
 
 	// minute with no market data
@@ -484,7 +484,7 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+182, 100, 3, false);
 	tickStorage.addTick(unixtime+183, 100, 3, false);
 
-	tickStorage.generateMinuteIndex();
+	tickStorage._generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute+3], {o: 13, c: 15, v: 0, h: null, l: null});
 
 	// check that position is correct after a minute full of aftermarket data
@@ -492,7 +492,7 @@ exports['minute index'] = function(test) {
 	tickStorage.addTick(unixtime+240, 100, 100, true);
 	tickStorage.addTick(unixtime+299, 100, 300, true);
 
-	tickStorage.generateMinuteIndex();
+	tickStorage._generateMinuteIndex();
 	test.deepEqual(tickStorage.minuteIndex.index[minute+4], {o: 16, c: 18, v: 300, h: 300, l: 100});
 
 	test.done();
@@ -748,7 +748,7 @@ exports['minute index with huge out of order data'] = function(test) {
 	test.deepEqual(tmpStorage.tickAtPosition(93717), {unixtime: 1308591714, price: 245600, volume: 100, isMarket: true});
 	test.deepEqual(tmpStorage.tickAtPosition(93718), {unixtime: 1308591714, price: 245600, volume: 312, isMarket: true});
 
-	tmpStorage.generateMinuteIndex();
+	tmpStorage._generateMinuteIndex();
 	
 	test.deepEqual(tmpStorage.minuteIndex.index[13*60+41], {o: 93627,  c: 93726,  v: 31444,  h: 245700, l: 245600});
 	test.deepEqual(tmpStorage.minuteIndex.index[15*60+30], {o: 125290, c: 125590, v: 337992, h: 245600, l: 245200});
