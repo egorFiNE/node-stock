@@ -19,7 +19,7 @@ following keys:
 For aftermarket minutes only the <code>o</code> and <code>c</code> are stored with <code>v</code> set to <code>0</code>
 and <code>h</code> and <code>l</code> set to <code>null</code>.
 
-If there were no data at all for a certain minute within the day, then <code>index[minute]</code> will be null. 
+If there were no data at all for a certain minute within the day, then <code>index[minute]</code> will be <code>null</code>. 
 
 You can access the instance of Minute Index as <code>TickStorage.minuteIndex[]</code>. So use 
 <code>TickStorage.minuteIndex.index[minute]</code> to get to the minute data. 
