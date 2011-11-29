@@ -58,27 +58,6 @@ TimePeriod.prototype.isUnixtimeIn = function(unixtime) {
 	return this.isMinuteIn(minute);
 }
 
-TimePeriod.prototype.timeToMinute = function(timeString) {
-	if (timeString===undefined) {
-		return undefined;
-	}
-	
-	if (!timeString.match(/^(\d+):(\d+)$/) && !timeString.match(/^(\d+)$/)) {
-		return undefined;
-	}
-	
-	var times = timeString.split(':');
-	
-	times[0] = parseInt(times[0]);
-	times[1] = parseInt(times[1] || 0);
-	
-	if (times[1]>59) { 
-		return undefined;
-	}
-	
-	return times[0]*60+times[1]*1;
-}
-
 TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 	if (periodString.match(/-$/)) {
 		this.isValid=false;
@@ -87,14 +66,14 @@ TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 	
 	var times = periodString.split('-');
 	
-	var startMinute=this.timeToMinute(times[0]);
+	var startMinute=TimePeriod.timeToMinute(times[0]);
 	
 	if (startMinute && times.length<=1) { //single hours
 		var _times = times[0].split(':');
 		times[1]=(parseInt(_times[0])+1)+":00";
 	}
 	
-	var endMinute = this.timeToMinute(times[1]);
+	var endMinute = TimePeriod.timeToMinute(times[1]);
 	
 	if (endMinute===undefined || startMinute===undefined) {
 		this.isValid=false;
@@ -149,12 +128,7 @@ TimePeriod.prototype.setMinute = function(m, enabled) {
 	this._periods[m] = enabled? true: false;
 }
 
-TimePeriod.prototype.minuteToTime = function(m) {
-	return parseInt(m/60) + ':' +parseInt(m%60).toDoubleZeroPaddedString();
-}
-
 TimePeriod.prototype.normalize = function() {
-	var self=this;
 	if (!this.isValid) {
 		return '';
 	}
@@ -182,7 +156,33 @@ TimePeriod.prototype.normalize = function() {
 	
 	var _periodsStrings=[];
 	_periods.forEach(function(period) {
-		_periodsStrings.push(self.minuteToTime(period[0])+"-"+self.minuteToTime(period[1]+1));
+		_periodsStrings.push(TimePeriod.minuteToTime(period[0])+"-"+TimePeriod.minuteToTime(period[1]+1));
 	});
 	return _periodsStrings.join(',').replace(/:00/g,'');
 }
+
+TimePeriod.timeToMinute = function(timeString) {
+	if (timeString===undefined) {
+		return undefined;
+	}
+	
+	if (!timeString.match(/^(\d+):(\d+)$/) && !timeString.match(/^(\d+)$/)) {
+		return undefined;
+	}
+	
+	var times = timeString.split(':');
+	
+	times[0] = parseInt(times[0]);
+	times[1] = parseInt(times[1] || 0);
+	
+	if (times[1]>59) { 
+		return undefined;
+	}
+	
+	return times[0]*60+times[1]*1;
+}
+
+TimePeriod.minuteToTime = function(m) {
+	return parseInt(m/60) + ':' +parseInt(m%60).toDoubleZeroPaddedString();
+}
+
