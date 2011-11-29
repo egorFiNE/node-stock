@@ -224,11 +224,11 @@ exports['rewind and position'] = function(test) {
 	tick = tickStorage.nextTick();
 	test.equal(tick.price, 3);
 	
-	tickStorage.rewind(1);
+	tickStorage.seek(-1, TickStorage.SEEK_CUR);
 	tick = tickStorage.nextTick();
 	test.equal(tick.price, 3);
 
-	tickStorage.rewind(2);
+	tickStorage.seek(-2, TickStorage.SEEK_CUR);
 	tick = tickStorage.nextTick();
 	test.equal(tick.price, 2);
 
@@ -245,7 +245,7 @@ exports['rewind and position'] = function(test) {
 	tick = tickStorage.nextTick(); // 4
 	tick = tickStorage.nextTick(); // 5
 
-	tickStorage.rewind(100);
+	tickStorage.seek(-100, TickStorage.SEEK_CUR);
 	tick = tickStorage.nextTick();
 	test.equal(tick.price, 1);
 	

@@ -7,6 +7,74 @@ compress = require('compress-buffer').compress;
 uncompress = require('compress-buffer').uncompress;
 MinuteIndex = require('./MinuteIndex');
 
+/** 
+
+Raw ticks storage module. 
+
+Ticks are stored on disk and in memory in a highly-efficient, extremely compact and fast format. Each trading 
+day is stored in a separate file named with a plain daystamp and ".ticks" extension. 
+
+Each file starts with a single line JSON header, which is handy to lookup in shell:
+
+	head -1 20110801.ticks
+
+@param {String} dbPath path to ticks database;
+@param {String} symbol symbol to load;
+@param {String} daystamp day to load or create.
+
+The file path is composed of all three parameters: dbPath/symbol/daystamp.ticks. 
+
+Typical read example: 
+
+	var tickStorage = new TickStorage('/home/tickers', 'AAPL', 20111019);
+	if (!tickStorage.load()) {
+		console.log("Oops?");
+	}
+
+	var tick;
+	while ((tick=tickStorage.nextTick())) {
+		if (!tick.isMarket) {  // isMarket is true for market ticks and false for aftermarket. 
+			continue;
+		}
+
+		ExtraLog.log("%T: %d @ %p", 
+			tick.unixtime,  // integer trade unixtime 
+			tick.volume,    // integer trade volume
+			tick.price      // integer tick price
+		);
+	}
+
+Typical create/write example: 
+	
+	var tickStorage = new TickStorage('/home/tickers', 'AAPL', 20111019);
+	tickStorage.prepareForNew();
+
+	tickStorage.addTick(unixtime, 100, 233700, true);
+	tickStorage.addTick(unixtime, 100, 233700, true);
+	...
+
+	if (!tickStorage.save()) {
+		console.log("Oops?!");
+	}
+
+**Note:** you cannot reuse TickStorage that was just created and stored. TickStorage instance is not 
+read/write so if you have just created a tick file, you will have to reload it from disk in order to read
+it. Something like that: 
+
+	...
+	if (!tickStorage.save()) {
+		console.log("Oops?!");
+	}
+
+	tickStorage = new TickStorage('/home/tickers', 'AAPL', 20111019);
+	if (!tickStorage.load()) {
+		console.log("Oops?!");
+	}
+
+	// now you can read! 
+
+ */
+
 function TickStorage(dbPath, symbol, daystamp) { 
 	this._dbPath = dbPath;
 	this._symbol = symbol.toUpperCase();
@@ -42,6 +110,12 @@ TickStorage.CURRENT_VERSION=1;
 TickStorage.SEEK_SET = 1;
 TickStorage.SEEK_CUR = 2;
 TickStorage.SEEK_END = 3;
+
+/**
+
+Filter out aftermarket time. After this call <code>TickStorage.nextTick()</code> will only return market ticks. 
+
+ */
 TickStorage.prototype.filterMarketTime = function() {
 	this.marketTimeOnly = true;
 	if (this.position < this.marketOpenPos) {
@@ -51,14 +125,35 @@ TickStorage.prototype.filterMarketTime = function() {
 	this.nextTick = this._nextTickMarket;
 }
 
+/**
+
+Returns symbol name.
+
+@return {String}
+
+ */
 TickStorage.prototype.getSymbol = function() {
 	return this._symbol;
 }
 
+/**
+
+Return true if this file exists in tick database.
+
+@return {Boolean}
+
+ */
 TickStorage.prototype.exists = function() {
 	return path.existsSync(this._path+this._filename);
 }
 
+/** 
+
+Will return the day minute to which the current position points to. 
+
+@return {Integer} day minute.
+
+ */
 TickStorage.prototype.tellMinute = function() {
 	var _m=null;
 	for (var m=0;m<1440;m++) {
@@ -69,6 +164,15 @@ TickStorage.prototype.tellMinute = function() {
 	return _m;
 }
 
+/**
+
+Seek to the first tick of that day minute.
+
+@param {Integer} minute day minute to seek to. 
+
+@return {Boolean} true if we could successfully seek to that minute (i.e. if it exists in tick data); false otherwise
+
+ */
 TickStorage.prototype.seekToMinute = function(minute) {
 	var m = this.minuteIndex.index[minute];
 	if (m) {
@@ -79,15 +183,50 @@ TickStorage.prototype.seekToMinute = function(minute) {
 	}
 }
 
-TickStorage.prototype.rewind = function(ticks) {
-	if (!ticks) {
-		this.position=0;
-	} else { 
-		this.position -= ticks;
-		if (this.position<0) {
-			this.position=0;
-		}
+
+/** 
+
+Seek to the first tick.
+
+@return {Integer} <code>null</code> if we couldn't seek to it; new position otherwise. 
+
+ */
+
+TickStorage.prototype.rewind = function() {
+	return this.seek(0, TickStorage.SEEK_SET);
+}
+
+TickStorage.prototype.seek = function(ticks, whence) {
+	if (ticks===undefined || !whence) {
+		return null;
 	}
+	
+	var newPosition=null;
+	switch (whence) {
+		case TickStorage.SEEK_SET: 
+			newPosition=ticks;
+			break;
+		case TickStorage.SEEK_CUR: 
+			newPosition=this.position+ticks;
+			break;
+		case TickStorage.SEEK_END:
+			newPosition=this.count-1+ticks;
+			break;
+		default:
+			return null;
+			break;
+	}
+	
+	if (newPosition<0) {
+		newPosition=0;
+	}
+	if (newPosition>=this.count) {
+		newPosition = this.count-1;
+	}
+	
+	this.position = newPosition;
+	
+	return this.position;
 }
 
 TickStorage.prototype._possiblyCreatePath = function() {
