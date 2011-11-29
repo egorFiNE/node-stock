@@ -204,7 +204,7 @@ exports['normalize']= function(test) {
 
 
 exports['unixtime']= function(test) {
-	test.expect(6);
+	test.expect(11);
 	
 	var today = new Date();
 	today.clearTime();
@@ -214,11 +214,19 @@ exports['unixtime']= function(test) {
 	var t = new TimePeriod('9:30-10:00');
 	test.ok(t.isValid);
 	
-	test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+30*60));
-	test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+36*60));
-	test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+59*60+59));
-	test.ok(!t.isUnixtimeIn(baseUnixtime+10*60*60+36*60));
-	test.ok(!t.isUnixtimeIn(baseUnixtime+10*60*60));
+	function _test() {
+		test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+30*60));
+		test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+36*60));
+		test.ok(t.isUnixtimeIn(baseUnixtime+9*60*60+59*60+59));
+		test.ok(!t.isUnixtimeIn(baseUnixtime+10*60*60+36*60));
+		test.ok(!t.isUnixtimeIn(baseUnixtime+10*60*60));
+	}
+
+	_test();
+
+	baseUnixtime+=86400;
+	
+	_test();
 	
 	test.done();
 }

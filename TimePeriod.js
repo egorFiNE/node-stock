@@ -49,6 +49,10 @@ TimePeriod.prototype.isUnixtimeIn = function(unixtime) {
 		this._setUnixtime(unixtime);
 	}
 	
+	if (unixtime - this._baseUnixtime > 86400) {
+		this._setUnixtime(unixtime);
+	}
+	
 	var seconds = unixtime - this._baseUnixtime;
 	var minute = parseInt(seconds/60);
 	return this.isMinuteIn(minute);
