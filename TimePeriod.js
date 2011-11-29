@@ -1,3 +1,51 @@
+
+/** 
+
+This class is used to parse time period strings and check various date variables if they are within the time period. 
+
+A time period is a comma-separated list of starting and ending time pairs. Each pair is dash-separated. 
+Spaces don't matter.
+
+For example, those are valid time periods:
+
+* 10:00-15:00
+* 11:00-23:30
+* 10:00-15:00
+* 10:00-12:00,12:30-14:00
+* 10:15-10:45, 11:00-11:30, 12:00-12:30
+
+You can omit minutes if you want to: 
+
+* 10-15
+* 10-12,12:30-14
+
+The time period pair is not considered inclusive: the beginning minute matches the time period while 
+the ending **does not.**  In other words, for time period "10:00-12:00", the "10:00" and "10:59" will
+match, while "12:00" is not.
+
+Example: 
+
+	var t = new TimePeriod('9:30-10:00,15-17');
+	if (!t.isValid) {
+		console.log("oops?");
+		return;
+	}
+
+	t.isHourMinuteIn(9,30);  // true
+	t.isHourMinuteIn(9,23);  // false
+	t.isHourMinuteIn(9,33);  // true
+	t.isHourMinuteIn(9,59);  // true
+	t.isHourMinuteIn(10,00); // false
+	t.isHourMinuteIn(15,10); // true
+	t.isHourMinuteIn(16,30); // true
+	t.isHourMinuteIn(23,00); // false
+
+	t.isUnixtimeIn(1322575298); // 16:01, true
+
+	t.isMinuteIn(9*60+30); // 9:30, true
+
+ */
+
 function TimePeriod(str) {
 	this.firstMinute=null;
 	this.lastMinute=null;
@@ -43,6 +91,16 @@ TimePeriod.prototype._setUnixtime  = function(unixtime) {
 	d.clearTime();
 	this._baseUnixtime = d.unixtime();
 }
+
+/** 
+
+Check if the given unixtime matches the period. 
+
+@param {Integer} unixtime unixtime to check
+
+@return {Boolean} true if it matches
+
+ */
 
 TimePeriod.prototype.isUnixtimeIn = function(unixtime) {
 	if (!this._baseUnixtime) {
@@ -96,18 +154,57 @@ TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 	}
 }
 
+/** 
+
+Check if given date matches the period. 
+
+@param {Date} date date to check
+
+@return {Boolean} true if it matches
+
+ */
+
 TimePeriod.prototype.isDateIn = function(date) {
 	return this.isHourMinuteIn(date.getHours(), date.getMinutes());
 }
+
+/** 
+
+Check if given hour and minute matches the period. 
+
+@param {Integer} hour hour to match
+@param {Integer} minute minute to match
+
+@return {Boolean} true if it matches
+
+ */
 
 TimePeriod.prototype.isHourMinuteIn = function(hour,minute) {
 	return this.isMinuteIn(hour*60+minute*1);
 }
 
+/** 
+
+Check if given day minute matches the period. Minutes are zero-based and calculated since 00:00, 
+so 9:45 becomes 9*60+45=585.
+
+@param {Integer} minute minute to check
+
+@return {Boolean} true if it matches
+
+*/
+
 TimePeriod.prototype.isMinuteIn = function(minute) {
 	return this._periods[minute];
 }
 
+/** 
+
+Returns first minute of the whole time period or 0 if none found. 
+
+@return {Integer} 
+
+ */
 
 TimePeriod.prototype.getFirstMinute = function() {
 	var i;
@@ -120,6 +217,14 @@ TimePeriod.prototype.getFirstMinute = function() {
 	return 0;
 }
 
+/** 
+
+Returns last minute of the whole time period or 1440-1 if none found. 
+
+@return {Integer} 
+
+ */
+
 TimePeriod.prototype.getLastMinute = function() {
 	var lastMinute=null;
 	var i;
@@ -131,9 +236,32 @@ TimePeriod.prototype.getLastMinute = function() {
 	return lastMinute==null?1339:lastMinute
 }
 
+/**
+
+Manually enable or disable a certain minute in the time period. 
+
+@param {Integer} m minute to set.
+@param {Boolean} enabled true of this minute must be enabled, false if this minute must be disabled.
+
+Example: 
+
+	var t = new TimePeriod('10:00-10:30');
+	t.setMinute(10*60+20, false);
+	t.normalize(); // 10-10:19, 10:21-10:30
+
+ */
+
 TimePeriod.prototype.setMinute = function(m, enabled) {
 	this._periods[m] = enabled? true: false;
 }
+
+/** 
+
+Return the clean, canonical string for the time period.
+
+@return {String}
+
+ */
 
 TimePeriod.prototype.normalize = function() {
 	if (!this.isValid) {
@@ -170,6 +298,16 @@ TimePeriod.prototype.normalize = function() {
 	return _periodsStrings.join(',').replace(/:00/g,'');
 }
 
+/**
+
+Helper function. Will return day minute for time string supplied. 
+
+@param {String} timeString time, like "11:30"
+
+@return {Integer} the day minute; for example, 570 for "9:30".
+
+ */
+
 TimePeriod.timeToMinute = function(timeString) {
 	if (timeString===undefined) {
 		return undefined;
@@ -190,6 +328,16 @@ TimePeriod.timeToMinute = function(timeString) {
 	
 	return times[0]*60+times[1]*1;
 }
+
+/**
+
+Helper function. Will return time string for day minute.
+
+@param {Integer} m day minute.
+
+@return {String} time string; for example, "9:30" for 570. 
+
+*/
 
 TimePeriod.minuteToTime = function(m) {
 	return parseInt(m/60) + ':' +parseInt(m%60).toDoubleZeroPaddedString();
