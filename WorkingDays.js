@@ -1,4 +1,14 @@
-WorkingDays = {};
+/**
+
+This static class holds date calculation functions needed to figure out working days and holidays for various
+exchanges.
+
+See source code for holidays array. 
+
+*/
+
+function WorkingDays() {
+}
 
 WorkingDays.nyseHolidays = {
 	2010: {
@@ -43,6 +53,15 @@ WorkingDays.nyseHolidays = {
 	}
 }
 
+/** 
+
+Check if given date is a holiday at NYSE.
+
+@param {Date} day date to check.
+
+@return {Boolean}
+
+ */
 WorkingDays.isNyseHoliday = function(day) {
 	var entry = WorkingDays.nyseHolidays[day.getFullYear()];
 	if (entry) {
@@ -54,14 +73,44 @@ WorkingDays.isNyseHoliday = function(day) {
 	return false;
 }
 
+/** 
+
+Check if a given date is a Sunday or Saturday. 
+
+@param {Date} day date to check.
+
+@return {Boolean}
+
+ */
+
 WorkingDays.isWeekend = function(day) {
 	var _d = day.getDay();
 	return (_d == 6 || _d==0);
 }
 
+/* 
+
+Check if the given date is a trading day at NYSE. 
+
+@param {Date} day date to check.
+
+@return {Boolean}
+
+ */
+
 WorkingDays.isNyseWorkingDay = function(day) {
 	return (!WorkingDays.isNyseHoliday(day) && !WorkingDays.isWeekend(day));
 }
+
+/** 
+
+Return previous trading day at NYSE for the given date. 
+
+@param {Date} day date for which to find the previous trading day.
+
+@return {Date} previous trading day.
+
+ */
 
 WorkingDays.prevNyseDay = function(day) {
 	var nextDate = day.clone();
@@ -71,6 +120,16 @@ WorkingDays.prevNyseDay = function(day) {
 	}
 	return nextDate;
 }
+
+/** 
+
+Return next trading day at NYSE for the given date. 
+
+@param {Date} day date for which to find the next trading day.
+
+@return {Date} next trading day.
+
+ */
 
 WorkingDays.nextNyseDay = function(day) {
 	var nextDate = day.clone();
