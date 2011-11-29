@@ -19,10 +19,6 @@ function Date() {
 }
 */
 
-function _zeroStrip(s) {
-	return s.toString().replace(/^0+/, '');
-}
-
 /** 
 
 Parse daystamp into Date. It's a factory method. 
@@ -191,3 +187,8 @@ Date.minuteToFormat = function(minute, format) {
 	d.setCurrentDayMinute(minute);
 	return d.toFormat(format);
 }
+
+function _zeroStrip(s) {
+	return s.toString().replace(/^0+/, '');
+}
+
