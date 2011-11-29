@@ -19,7 +19,6 @@ function Date() {
 }
 */
 
-
 function _zeroStrip(s) {
 	return s.toString().replace(/^0+/, '');
 }
@@ -192,4 +191,3 @@ Date.minuteToFormat = function(minute, format) {
 	d.setCurrentDayMinute(minute);
 	return d.toFormat(format);
 }
-
