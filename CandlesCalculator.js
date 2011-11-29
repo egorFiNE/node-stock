@@ -18,22 +18,6 @@ util.inherits(CandlesCalculator, events.EventEmitter);
 module.exports = CandlesCalculator;
 
 
-CandlesCalculator.prototype.unserialize = function(data) { 
-	var self=this;
-	Object.keys(data).forEach(function(key) {
-		self[key]=data[key];
-	});
-}
-
-CandlesCalculator.prototype.serialize = function() { 
-	var self=this;
-	var result = {};
-	Object.keys(this).forEach(function(key) {
-		result[key] = self[key];
-	});
-	delete result._events;
-	return result;
-}
 
 CandlesCalculator.prototype.clearPeriod = function() {
 	this.currentVolume=0;
@@ -141,4 +125,22 @@ CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period) {
 	}
 	candlesCalculator.finish();
 	return candles;
+}
+
+
+CandlesCalculator.prototype.unserialize = function(data) { 
+	var self=this;
+	Object.keys(data).forEach(function(key) {
+		self[key]=data[key];
+	});
+}
+
+CandlesCalculator.prototype.serialize = function() { 
+	var self=this;
+	var result = {};
+	Object.keys(this).forEach(function(key) {
+		result[key] = self[key];
+	});
+	delete result._events;
+	return result;
 }
