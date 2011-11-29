@@ -2,6 +2,14 @@ util = require('util');
 fs = require('fs');
 events = require('events');
 
+/** 
+
+Calculate OHLC data for ticks stream. FIXME: is this module even needed now? 
+
+@param {Integer} minutes period size for which to calculate candles, in minutes.
+
+ */
+
 function CandlesCalculator(minutes) {
 	events.EventEmitter.call(this);
 	
