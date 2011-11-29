@@ -5,7 +5,6 @@ symbol = require('./Symbol');
 Symbols = function(dbPath) {
 	this.dbPath = dbPath;
 	this.symbols = [];
-	this.load();
 }
 
 Symbols.prototype.load = function() {
