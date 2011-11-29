@@ -1,6 +1,6 @@
 require('date-utils');
 
-function zeroStrip(s) {
+function _zeroStrip(s) {
 	return s.toString().replace(/^0+/, '');
 }
 
@@ -8,8 +8,8 @@ Date.parseDaystamp = function(daystamp) {
 	daystamp = daystamp.toString();
 	
 	var y = parseInt(daystamp.substr(0,4));
-	var m = parseInt(zeroStrip(daystamp.substr(4,2)));
-	var d = parseInt(zeroStrip(daystamp.substr(6,2)));
+	var m = parseInt(_zeroStrip(daystamp.substr(4,2)));
+	var d = parseInt(_zeroStrip(daystamp.substr(6,2)));
 
 	m--;
 	return new Date(y,m,d);
