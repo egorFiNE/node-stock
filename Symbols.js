@@ -29,13 +29,7 @@ Symbols.prototype.load = function() {
 }
 
 Symbols.prototype.exists = function(symbol) {
-	var i=0;
-	for(i=0;i<this.symbols.length;i++) {
-		if (this.symbols[i]==symbol) {
-			return true;
-		}
-	}
-	return false;
+	return this.symbols.indexOf(symbol) >= 0;
 }
 
 Symbols.prototype.rewind = function() {
