@@ -14,7 +14,6 @@ be specified both in string or integer and all the methods and functions must ac
  */
 
 // trick doc.js into thinking that we have declared the Date class. 
-
 /*
 function Date() {
 }

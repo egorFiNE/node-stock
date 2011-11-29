@@ -14,8 +14,6 @@ exports['price format'] = function(test) {
 	test.equal(ExtraLog.format('%T', d.unixtime()), '13:23:41');
 	test.equal(ExtraLog.format('%D', d.unixtime()), '20111229');
 	
-	ExtraLog.log("%p", 10000);
-	
 	test.done();
 };
 
