@@ -3,15 +3,13 @@ path = require('path');
 
 /**
 
-Class that represents one ticker storage in the ticks database. Essentially this is just a wrapper around a 
+Represents one particular symbol storage in the ticks database. Essentially this is just a wrapper around a 
 list of *.ticks files with handy access methods. 
 
 @param {String} dbPath path to ticks database.
 @param {String} symbol symbol name, must be uppercase.
 
 Tick files list is generated from <code>dbPath/symbol/*.ticks</code>.
-
-@return {Symbol} 
 
 Example: 
 
