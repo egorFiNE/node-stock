@@ -28,7 +28,6 @@ exports['meta']= function(test) {
 	test.expect(6);
 	
 	fs.mkdirSync('/tmp/DDDD', 0755);
-	fs.writeFileSync('/tmp/DDDD/empty'); // work around 0.5.7 bugs
 	
 	var symbol = new Symbol('/tmp', 'DDDD');
 	test.ok(symbol.load());
@@ -46,7 +45,6 @@ exports['meta']= function(test) {
 	test.equal(symbol.meta.answer, '42');
 	
 	fs.unlinkSync('/tmp/DDDD/meta.json');
-	fs.unlinkSync('/tmp/DDDD/empty'); // 0.5.7 bugs
 	fs.rmdirSync('/tmp/DDDD/');
 	test.done();
 }
