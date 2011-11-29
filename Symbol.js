@@ -108,16 +108,4 @@ Symbol.prototype.dayExists = function(daystamp) {
 	return this.days.indexOf(daystamp)>=0;
 }
 
-Symbol.prototype.getLastXDays = function(x) {
-	var result = [];
-	var i=this.days.length;
-	for(i=this.days.length-1;i>=0;i--) {
-		result.push(this.days[i]);
-		if (result.length==x) {
-			return result;
-		}
-	}
-	return result;
-}
-
 module.exports = Symbol;
