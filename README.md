@@ -28,18 +28,18 @@ The main thing: a tick storage engine.
 All prices in **node-stock** and derived software are stored in integer in 1/100 of a cent. I.e. $23,45 becomes 234500. To convert a conventional price to this format, use <code>parseInt(price*10000)</code>. To show a human-readable version, use <code>Number.humanReadablePrice()</code> in **ExtraNumber**: 
 
 ```javascript
-	require('stock/ExtraNumber');
-	
-	var price = 23.56;
-	price = parseInt(price*10000);
+require('stock/ExtraNumber');
 
-	console.log("Price = %s", price.humanReadablePrice());
-	
-	// or: 
+var price = 23.56;
+price = parseInt(price*10000);
 
-	require('stock/ExtraLog');
-	
-	ExtraLog.log("Price = %p", price);
+console.log("Price = %s", price.humanReadablePrice());
+
+// or: 
+
+require('stock/ExtraLog');
+
+ExtraLog.log("Price = %p", price);
 ```
 
 ## Other agreements
@@ -59,15 +59,15 @@ All prices in **node-stock** and derived software are stored in integer in 1/100
 **2.** Set <code>process.env.TZ</code> right at the start of your script before making anything else, especially before calling any Date methods: 
 
 ```javascript
-	process.env.TZ='America/New_York';
-	console.log("Hello at %s", new Date());
+process.env.TZ='America/New_York';
+console.log("Hello at %s", new Date());
 
-	// or: 
+// or: 
 
-	require('stock/ExtraDate');
-	require('stock/ExtraLog');
-	process.env.TZ='America/New_York';
-	ExtraLog.log("Hello at %D", Date.unixtime());
+require('stock/ExtraDate');
+require('stock/ExtraLog');
+process.env.TZ='America/New_York';
+ExtraLog.log("Hello at %D", Date.unixtime());
 ```
 
 # Requirements
@@ -131,55 +131,55 @@ You don't need to traverse this folder structure manually: there are two handy m
 Here's a handy sinopsis: 
 
 ```javascript
-	Symbols = require('stock/Symbols');
-	Symbol = require('stock/Symbol');
-	TickStorage = require('stock/TickStorage');
-	require('stock/ExtraDate');
-	require('stock/ExtraNumber');
+Symbols = require('stock/Symbols');
+Symbol = require('stock/Symbol');
+TickStorage = require('stock/TickStorage');
+require('stock/ExtraDate');
+require('stock/ExtraNumber');
 
-	var dbPath = '/Users/egor/tickers';
+var dbPath = '/Users/egor/tickers';
 
-	// initialise the class that works with tickers database (a folder of tickers folders) 
-	var symbols  = new Symbols(dbPath);
+// initialise the class that works with tickers database (a folder of tickers folders) 
+var symbols  = new Symbols(dbPath);
 
-	// now actually load the list of tickers (folders) available at that path
-	if (!symbols.load()) {
-		console.log("Cannot load tickers database!");
+// now actually load the list of tickers (folders) available at that path
+if (!symbols.load()) {
+	console.log("Cannot load tickers database!");
+	return;
+}
+
+
+// now let's iterate over all tickers available
+var symbol;
+while ((symbol=symbols.next())) {
+	// mind that here "symbol" is a instantiated "Symbol" class
+
+	// actually load list of days (files) at for that ticker (folder)
+	if (!symbol.load()) {
+		console.log("Cannot load days for %s", symbol.symbol);
 		return;
 	}
 
 
-	// now let's iterate over all tickers available
-	var symbol;
-	while ((symbol=symbols.next())) {
-		// mind that here "symbol" is a instantiated "Symbol" class
+	// prepare tick storage for the first day of that ticker
+	var tickStorage = new TickStorage(dbPath, symbol.symbol, symbol.firstDay());
 
-		// actually load list of days (files) at for that ticker (folder)
-		if (!symbol.load()) {
-			console.log("Cannot load days for %s", symbol.symbol);
-			return;
-		}
-
-
-		// prepare tick storage for the first day of that ticker
-		var tickStorage = new TickStorage(dbPath, symbol.symbol, symbol.firstDay());
-
-		// actually load the raw tick data for this symbol at that day
-		if (!tickStorage.load()) {
-			console.log("Cannot load ticks for %s/%s", symbol.symbol, symbol.firstDay());
-			return;
-		}
-
-		// iterate over market ticks and calculate total volume
-		var tick, totalVolume=0;
-		while ((tick=tickStorage.nextTick())) {
-			if (tick.isMarket) {
-				totalVolume+=tick.volume;
-			}
-		}
-
-		console.log("%s total volume = %d", symbol.symbol, totalVolume);
+	// actually load the raw tick data for this symbol at that day
+	if (!tickStorage.load()) {
+		console.log("Cannot load ticks for %s/%s", symbol.symbol, symbol.firstDay());
+		return;
 	}
+
+	// iterate over market ticks and calculate total volume
+	var tick, totalVolume=0;
+	while ((tick=tickStorage.nextTick())) {
+		if (tick.isMarket) {
+			totalVolume+=tick.volume;
+		}
+	}
+
+	console.log("%s total volume = %d", symbol.symbol, totalVolume);
+}
 ```
 
 
