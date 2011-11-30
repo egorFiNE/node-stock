@@ -37,7 +37,11 @@
 		</style>
 	</head>
 	<body>
-		<h2><span class="class">Symbol(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>)</span></h2>
+		<h1>Symbol.js</h1>
+
+<ul><li><a href="#classQsymbolQdbpathqqsymbol">Symbol(dbPath, symbol)</a></li><li><a href="#methodQsetisactiveQisactive">setIsActive(isActive)</a></li><li><a href="#methodQisactiveQ">isActive()</a></li><li><a href="#methodQsaveQ">save()</a></li><li><a href="#methodQloadQ">load()</a></li><li><a href="#methodQforeachdayQcbqqcontext">forEachDay(cb, context)</a></li><li><a href="#methodQrewindQ">rewind()</a></li><li><a href="#methodQnextdayQ">nextDay()</a></li><li><a href="#methodQfirstdayQ">firstDay()</a></li><li><a href="#methodQlastdayQ">lastDay()</a></li><li><a href="#methodQcountQ">count()</a></li><li><a href="#methodQdayexistsQdaystamp">dayExists(daystamp)</a></li></ul>
+
+<h2><span class="class">Symbol(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>)</span></h2>
 
 <p>Represents one particular symbol storage in the ticks database. Essentially this is just a wrapper around a 
 list of *.ticks files with handy access methods. </p>
@@ -59,21 +63,21 @@ while ((daystamp=symbol.next())) {
 	console.log("Day: %s", daystamp);
 }</code></pre>
 
-<h3>setIsActive(<span class="parameter">isActive</span>)</h3>
+<h3><a name="methodQsetisactiveQisactive"></a> setIsActive(<span class="parameter">isActive</span>)</h3>
 
 <p>Set active flag for the ticker. This flag is used by downloader to skip download this ticker from 
 IQFeed if the flag is set. Defaults to false, of course. Don't forget to call <code>.save()</code> after
 setting the flag.</p>
 
-<h3>isActive()</h3>
+<h3><a name="methodQisactiveQ"></a> isActive()</h3>
 
 <p>Get active flag for the ticker. </p>
 
-<h3>save()</h3>
+<h3><a name="methodQsaveQ"></a> save()</h3>
 
 <p>Save updated information for the ticker. Now this is just the meta information that contains active flag.</p>
 
-<h3>load()</h3>
+<h3><a name="methodQloadQ"></a> load()</h3>
 
 <p>Load the ticker from dbpath. Essentially does load the list of all days available for the ticker and 
 the meta information.</p>
@@ -82,7 +86,7 @@ the meta information.</p>
 
 <ul><li><code><span class="type">Boolean</span></code> if loaded successfully.</li></ul>
 
-<h3>forEachDay(<span class="parameter">cb</span>, <span class="parameter">context</span>)</h3>
+<h3><a name="methodQforeachdayQcbqqcontext"></a> forEachDay(<span class="parameter">cb</span>, <span class="parameter">context</span>)</h3>
 
 <p>Single-step iterator over all days. </p>
 
@@ -90,11 +94,11 @@ the meta information.</p>
 
 <p>Callback function will receive one argument: the daystamp, string.</p>
 
-<h3>rewind()</h3>
+<h3><a name="methodQrewindQ"></a> rewind()</h3>
 
 <p>Rewind current iterator position to the beginning.</p>
 
-<h3>nextDay()</h3>
+<h3><a name="methodQnextdayQ"></a> nextDay()</h3>
 
 <p>Get the next day from list of days. </p>
 
@@ -102,7 +106,7 @@ the meta information.</p>
 
 <ul><li><code><span class="type">String</span></code> daystamp.</li></ul>
 
-<h3>firstDay()</h3>
+<h3><a name="methodQfirstdayQ"></a> firstDay()</h3>
 
 <p>Get the first day from list of days. </p>
 
@@ -110,7 +114,7 @@ the meta information.</p>
 
 <ul><li><code><span class="type">String</span></code> daystamp.</li></ul>
 
-<h3>lastDay()</h3>
+<h3><a name="methodQlastdayQ"></a> lastDay()</h3>
 
 <p>Get the last day from list of days. </p>
 
@@ -118,7 +122,7 @@ the meta information.</p>
 
 <ul><li><code><span class="type">String</span></code> daystamp.</li></ul>
 
-<h3>count()</h3>
+<h3><a name="methodQcountQ"></a> count()</h3>
 
 <p>Get the count of available days.</p>
 
@@ -126,7 +130,7 @@ the meta information.</p>
 
 <ul><li><code><span class="type">String</span></code> count of days.</li></ul>
 
-<h3>dayExists(<span class="parameter">daystamp</span>)</h3>
+<h3><a name="methodQdayexistsQdaystamp"></a> dayExists(<span class="parameter">daystamp</span>)</h3>
 
 <p>Check if this daystamp exists for this ticker.</p>
 

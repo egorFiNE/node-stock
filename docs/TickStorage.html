@@ -37,7 +37,11 @@
 		</style>
 	</head>
 	<body>
-		<h2><span class="class">TickStorage(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>, <span class="parameter">daystamp</span>)</span></h2>
+		<h1>TickStorage.js</h1>
+
+<ul><li><a href="#classQtickstorageQdbpathqqsymbolqqdaystamp">TickStorage(dbPath, symbol, daystamp)</a></li><li><a href="#methodQfiltermarkettimeQ">filterMarketTime()</a></li><li><a href="#methodQgetsymbolQ">getSymbol()</a></li><li><a href="#methodQexistsQ">exists()</a></li><li><a href="#methodQtellminuteQ">tellMinute()</a></li><li><a href="#methodQseektominuteQminute">seekToMinute(minute)</a></li><li><a href="#methodQrewindQ">rewind()</a></li><li><a href="#methodQseekQticksqqwhence">seek(ticks, whence)</a></li><li><a href="#methodQsaveQquick">save(quick)</a></li><li><a href="#methodQremoveQ">remove()</a></li><li><a href="#methodQloadQ">load()</a></li><li><a href="#methodQpreparefornewQmegs">prepareForNew(megs)</a></li><li><a href="#methodQaddtickQunixtimeqqvolumeqqpriceqqismarketqqdisableorphanlogic">addTick(unixtime, volume, price, isMarket, disableOrphanLogic)</a></li><li><a href="#methodQtickatpositionQposition">tickAtPosition(position)</a></li><li><a href="#methodQnexttickQ">nextTick()</a></li></ul>
+
+<h2><span class="class">TickStorage(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>, <span class="parameter">daystamp</span>)</span></h2>
 
 <p>Raw ticks storage. </p>
 
@@ -105,11 +109,11 @@ if (!tickStorage.load()) {
 
 <ul><li><strong>isMarket</strong> boolean, true for market ticks and false for aftermarket;</li><li><strong>unixtime</strong> integer, cannot be zero or null;</li><li><strong>volume</strong> integer, can be zero in rare cases the stock exchange sent us such a tick;</li><li><strong>price</strong> integer, can be zero in rare cases the stock exchange sent us such a tick;</li></ul>
 
-<h3>filterMarketTime()</h3>
+<h3><a name="methodQfiltermarkettimeQ"></a> filterMarketTime()</h3>
 
 <p>Filter out aftermarket time. After this call <code>TickStorage.nextTick()</code> will only return market ticks. </p>
 
-<h3>getSymbol()</h3>
+<h3><a name="methodQgetsymbolQ"></a> getSymbol()</h3>
 
 <p>Returns symbol name.</p>
 
@@ -117,7 +121,7 @@ if (!tickStorage.load()) {
 
 <ul><li><code><span class="type">String</span></code> </li></ul>
 
-<h3>exists()</h3>
+<h3><a name="methodQexistsQ"></a> exists()</h3>
 
 <p>Return true if this file exists in tick database.</p>
 
@@ -125,7 +129,7 @@ if (!tickStorage.load()) {
 
 <ul><li><code><span class="type">Boolean</span></code> </li></ul>
 
-<h3>tellMinute()</h3>
+<h3><a name="methodQtellminuteQ"></a> tellMinute()</h3>
 
 <p>Will return the day minute to which the current position points to. </p>
 
@@ -133,7 +137,7 @@ if (!tickStorage.load()) {
 
 <ul><li><code><span class="type">Integer</span></code> day minute.</li></ul>
 
-<h3>seekToMinute(<span class="parameter">minute</span>)</h3>
+<h3><a name="methodQseektominuteQminute"></a> seekToMinute(<span class="parameter">minute</span>)</h3>
 
 <p>Seek to the first tick of that day minute.</p>
 
@@ -143,7 +147,7 @@ if (!tickStorage.load()) {
 
 <ul><li><code><span class="type">Boolean</span></code> true if we could successfully seek to that minute (i.e. if it exists in tick data); false otherwise</li></ul>
 
-<h3>rewind()</h3>
+<h3><a name="methodQrewindQ"></a> rewind()</h3>
 
 <p>Seek to the first tick.</p>
 
@@ -151,7 +155,7 @@ if (!tickStorage.load()) {
 
 <ul><li><code><span class="type">Integer</span></code> <code>null</code> if we couldn't seek to it; new position otherwise.</li></ul>
 
-<h3>seek(<span class="parameter">ticks</span>, <span class="parameter">whence</span>)</h3>
+<h3><a name="methodQseekQticksqqwhence"></a> seek(<span class="parameter">ticks</span>, <span class="parameter">whence</span>)</h3>
 
 <p>Seek to the position in ticks. </p>
 
@@ -169,7 +173,7 @@ be positive).</p>
 
 <ul><li><code><span class="type">Integer</span></code> new position or <code>null</code> if we couldn't seek.</li></ul>
 
-<h3>save(<span class="parameter">quick</span>)</h3>
+<h3><a name="methodQsaveQquick"></a> save(<span class="parameter">quick</span>)</h3>
 
 <p>Save newly created tick file. </p>
 
@@ -181,11 +185,11 @@ be positive).</p>
 
 <p><strong>Note:</strong> you cannot reuse newly saved TickStorage, you have to reload it. </p>
 
-<h3>remove()</h3>
+<h3><a name="methodQremoveQ"></a> remove()</h3>
 
 <p>Remove ticks file. Will not return anything and won't complain on errors.</p>
 
-<h3>load()</h3>
+<h3><a name="methodQloadQ"></a> load()</h3>
 
 <p>Load ticks file. </p>
 
@@ -193,13 +197,13 @@ be positive).</p>
 
 <ul><li><code><span class="type">Boolean</span></code> true in case of success, false otherwise.</li></ul>
 
-<h3>prepareForNew(<span class="parameter">megs</span>)</h3>
+<h3><a name="methodQpreparefornewQmegs"></a> prepareForNew(<span class="parameter">megs</span>)</h3>
 
 <p>Prepare TickStorage for creation of a new ticks file. You must only call this method on a fresh TickStorage instance. </p>
 
 <p>@params {Integer} megs how many megabytes of RAM to preallocate for tick storage. Each tick takes 13 bytes, so allocate wisely. By default it's 100MB which should be enough for everyone. </p>
 
-<h3>addTick(<span class="parameter">unixtime</span>, <span class="parameter">volume</span>, <span class="parameter">price</span>, <span class="parameter">isMarket</span>, <span class="parameter">disableOrphanLogic</span>)</h3>
+<h3><a name="methodQaddtickQunixtimeqqvolumeqqpriceqqismarketqqdisableorphanlogic"></a> addTick(<span class="parameter">unixtime</span>, <span class="parameter">volume</span>, <span class="parameter">price</span>, <span class="parameter">isMarket</span>, <span class="parameter">disableOrphanLogic</span>)</h3>
 
 <p>Add another brick in the wall. </p>
 
@@ -210,7 +214,7 @@ duplicate ticks from the distant past or future. Orphan ticks are moved into the
 history, making it consistent. Actually never disable this logic unless you are doing conversion
 of ticks database from one format to another. </p>
 
-<h3>tickAtPosition(<span class="parameter">position</span>)</h3>
+<h3><a name="methodQtickatpositionQposition"></a> tickAtPosition(<span class="parameter">position</span>)</h3>
 
 <p>Return tick entry at position. </p>
 
@@ -220,7 +224,7 @@ of ticks database from one format to another. </p>
 
 <ul><li>Tick entry or null.</li></ul>
 
-<h3>nextTick()</h3>
+<h3><a name="methodQnexttickQ"></a> nextTick()</h3>
 
 <p>An iterator. Get next tick entry or null. </p>
 
