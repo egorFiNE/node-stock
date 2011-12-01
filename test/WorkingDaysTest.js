@@ -29,6 +29,22 @@ exports['check nyse working days'] = function(test) {
 	test.done();
 }
 
+exports['check nyse short days'] = function(test) {
+	process.env.TZ='America/New_York';
+	
+	test.expect(2);
+	
+	var day;
+
+	day = Date.parseDaystamp('20110903'); 
+	test.ok(!WorkingDays.isNyseShortDay(day));
+
+	day = Date.parseDaystamp('20111125'); 
+	test.ok(WorkingDays.isNyseShortDay(day));
+	test.done();
+}
+
+
 exports['check nyse prev/next day'] = function(test) {
 	process.env.TZ='America/New_York';
 	

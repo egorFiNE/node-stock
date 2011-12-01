@@ -57,6 +57,32 @@ WorkingDays.nyseHolidays = {
 	}
 }
 
+WorkingDays.nyseShortDays = {
+	2011: {
+		11: [25]
+	}
+};
+
+/** 
+
+Check if given date is a short trading session at NYSE (MOC @ 13:00)
+
+@param {Date} day date to check.
+
+@return {Boolean}
+
+ */
+WorkingDays.isNyseShortDay = function(day) {
+	var entry = WorkingDays.nyseShortDays[day.getFullYear()];
+	if (entry) {
+		entry = entry[day.getMonth()+1];
+		if (entry) {
+			return entry.indexOf(day.getDate()) >= 0;
+		}
+	}
+	return false;
+}
+
 /** 
 
 Check if given date is a holiday at NYSE.
