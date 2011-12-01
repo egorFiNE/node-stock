@@ -98,7 +98,7 @@ be specified both in string or integer and all the methods and functions must ac
 
 <h3>Date.fillEmptyDays(<span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
 
-<p>Return an array of Dates between two days, not inclusive. </p>
+<p>Return an array of Dates (days) between two dates, inclusive. </p>
 
 <ul><li><code><span class="type">Date</span></code> <code><strong>from</strong></code> &#8212; starting day</li><li><code><span class="type">Date</span></code> <code><strong>to</strong></code> &#8212; ending day</li></ul>
 
@@ -106,12 +106,21 @@ be specified both in string or integer and all the methods and functions must ac
 
 <ul><li><code><span class="type">Array</span></code> array of Dates between those.</li></ul>
 
+<p>If from and to are the same, it will only return one element. </p>
+
 <p>Example: </p>
 
 <pre><code>var from = new Date('2011-06-15');
 var to   = new Date('2011-06-18');
 var days = Date.fillEmptyDays(from, to);
-// days == [new Date('2011-06-16'), new Date('2011-06-17')]; </code></pre>
+// days == [
+	new Date('2011-06-15'), 
+	new Date('2011-06-16'), 
+	new Date('2011-06-17'), 
+	new Date('2011-06-18')
+]; </code></pre>
+
+<p>Note: this function is not time-safe, so please use only for dates. </p>
 
 <h3><a name="methodQgetdaynameQ"></a> getDayName()</h3>
 

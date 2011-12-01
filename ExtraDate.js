@@ -92,19 +92,28 @@ Date.unixtime = function() {
 
 /**
 
-Return an array of Dates between two days, not inclusive. 
+Return an array of Dates (days) between two dates, inclusive. 
 
 @param {Date} from starting day
 @param {Date} to ending day
 
 @return {Array} array of Dates between those. 
 
+If from and to are the same, it will only return one element. 
+
 Example: 
 
 	var from = new Date('2011-06-15');
 	var to   = new Date('2011-06-18');
 	var days = Date.fillEmptyDays(from, to);
-	// days == [new Date('2011-06-16'), new Date('2011-06-17')]; 
+	// days == [
+		new Date('2011-06-15'), 
+		new Date('2011-06-16'), 
+		new Date('2011-06-17'), 
+		new Date('2011-06-18')
+	]; 
+
+Note: this function is not time-safe, so please use only for dates. 
 
  */
 
@@ -114,6 +123,10 @@ Date.fillEmptyDays = function(from, to) {
 	var nextDate = new Date(from);
 	nextDate.clearTime();
 	
+	var firstDate = new Date(nextDate);
+	
+	result.push(nextDate);
+	
 	nextDate = Date.parseUnixtime(nextDate.unixtime()+86400);
 	
 	to = new Date(to);
@@ -122,6 +135,10 @@ Date.fillEmptyDays = function(from, to) {
 	while (nextDate < to) {
 		result.push(nextDate);
 		nextDate = Date.parseUnixtime(nextDate.unixtime()+86400);
+	}
+	
+	if (firstDate.daystamp()!=to.daystamp()) {
+		result.push(to);
 	}
 
 	return result;

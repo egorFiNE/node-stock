@@ -47,16 +47,29 @@ exports['minutes helper'] = function(test) {
 }
 
 exports['fill empty days'] = function(test) {
-	test.expect(1);
+	test.expect(4);
 	
-	var from = Date.parseDaystamp(20110615);
-	var to   = Date.parseDaystamp(20110618)
-	var days = Date.fillEmptyDays(from, to);
+	function _between(f, t) {
+		var days = Date.fillEmptyDays(Date.parseDaystamp(f), Date.parseDaystamp(t));
+
+		return days.map(function(d) {
+			return d.daystamp();
+		});
+	}
 	
-	days = days.map(function(d) {
-		return d.daystamp();
-	});
+	var days;
 	
-	test.deepEqual(days, ['20110616', '20110617']);
+	days = _between(20110615, 20110618);
+	test.deepEqual(days, ['20110615', '20110616', '20110617', '20110618']);
+	
+	days = _between(20110615, 20110616);
+	test.deepEqual(days, ['20110615', '20110616']);
+
+	days = _between(20110615, 20110617);
+	test.deepEqual(days, ['20110615', '20110616', '20110617']);
+
+	days = _between(20110615, 20110615);
+	test.deepEqual(days, ['20110615']);
+	
 	test.done();
 }
