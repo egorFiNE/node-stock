@@ -104,7 +104,11 @@ CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period) {
 	var candles=[];
 
 	var candlesCalculator = new CandlesCalculator(period);
-	candlesCalculator.on('candle', function(hour, minute, h,l,o,c,v) {
+	candlesCalculator.on('candle', function(hour, minute, h,l,o,c,v,t) {
+		if (hour==16 && minute>0) { 
+			return;
+		}
+		
 		candles.push({
 			hour:hour,
 			minute:minute,
@@ -112,7 +116,8 @@ CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period) {
 			c:c,
 			h:h,
 			l:l,
-			v:v
+			v:v,
+			t:t
 		});
 	});
 
