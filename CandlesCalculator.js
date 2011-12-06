@@ -217,11 +217,9 @@ CandlesCalculator._setCandleHourMinute = function(candle, minute) {
 
 /** 
 
-Utility method: all of the above in a single call.abstract
+Utility method: all of the above in a single call. 
 
-@param {String} dbPath Path to database (see TickStorage).
-@param {String} symbol Symbol to load.
-@param {Integer} daystamp Daystamp to load.
+@param {TickStorage} tickStorage TickStorage that was already <code>load()</code>'ed. 
 @param {Integer} period Period size in minutes.
 @param {Integer} from Get candles starting from this minute.
 @param {Integer} to Get candles till this minute.
@@ -243,12 +241,7 @@ Example data:
 
 */
 
-CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period, from, to) {
-	var tickStorage = new TickStorage(dbPath, symbol, daystamp);
-	if (!tickStorage.load()) {
-		return null;
-	}
-	
+CandlesCalculator.getCandlesOfTickStorage = function(tickStorage, period, from, to) {
 	var _result=[];
 	
 	from = from||0;
@@ -264,5 +257,29 @@ CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period, from, 
 	
 	return _result;
 }
+
+/** 
+
+Utility method: just like <code>getCandlesOfTickStorage()</code>, but will also instantiate and load the TickStorage for you. See
+<code>getCandlesOfTickStorage()</code> for description.
+
+@param {String} dbPath Path to database (see TickStorage).
+@param {String} symbol Symbol to load.
+@param {Integer} daystamp Daystamp to load.
+@param {Integer} period Period size in minutes.
+@param {Integer} from Get candles starting from this minute.
+@param {Integer} to Get candles till this minute.
+
+*/
+
+CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period, from, to) {
+	var tickStorage = new TickStorage(dbPath, symbol, daystamp);
+	if (!tickStorage.load()) {
+		return null;
+	}
+	
+	return CandlesCalculator.getCandlesOfTickStorage(tickStorage, period, from, to);
+}
+
 
 module.exports = CandlesCalculator;
