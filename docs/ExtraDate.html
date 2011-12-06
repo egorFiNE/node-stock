@@ -41,7 +41,7 @@
 
 <ul><li><a href="#classQdateQ">Date()</a></li><li><a href="#staticQmethodQparsedaystampQdaystamp">parseDaystamp(daystamp)</a></li><li><a href="#methodQdaystampQ">daystamp()</a></li><li><a href="#staticQmethodQparseunixtimeQunixtime">parseUnixtime(unixtime)</a></li><li><a href="#methodQunixtimeQ">unixtime()</a></li><li><a href="#staticQmethodQunixtimeQ">unixtime()</a></li><li><a href="#staticQmethodQfillemptydaysQfromqqto">fillEmptyDays(from, to)</a></li><li><a href="#methodQgetdaynameQ">getDayName()</a></li><li><a href="#methodQsetcurrentdayminuteQminute">setCurrentDayMinute(minute)</a></li><li><a href="#methodQgetcurrentdayminuteQ">getCurrentDayMinute()</a></li><li><a href="#staticQmethodQminutetoformatQminuteqqformat">minuteToFormat(minute, format)</a></li></ul>
 
-<h2><span class="class">Date()</span></h2>
+<h2><a name="classQdateQ"></a> <span class="class">Date()</span></h2>
 
 <p>Various date methods useful for stock trading. </p>
 
@@ -52,7 +52,7 @@ decided to pick this solution anyway.</p>
 be specified both in string or integer and all the methods and functions must accept either type 
 (mind <code>.toString()</code> and <code>parseInt()</code> for easy implementation). </p>
 
-<h3>Date.parseDaystamp(<span class="parameter">daystamp</span>)  <span class="static">static</span></h3>
+<h3><a name="staticQmethodQparsedaystampQdaystamp"></a> Date.parseDaystamp(<span class="parameter">daystamp</span>)  <span class="static">static</span></h3>
 
 <p>Parse daystamp into Date. It's a factory method. </p>
 
@@ -70,7 +70,7 @@ be specified both in string or integer and all the methods and functions must ac
 
 <ul><li><code><span class="type">String</span></code> daystamp</li></ul>
 
-<h3>Date.parseUnixtime(<span class="parameter">unixtime</span>)  <span class="static">static</span></h3>
+<h3><a name="staticQmethodQparseunixtimeQunixtime"></a> Date.parseUnixtime(<span class="parameter">unixtime</span>)  <span class="static">static</span></h3>
 
 <p>Parse unixtime into Date. It's a factory method. </p>
 
@@ -88,7 +88,7 @@ be specified both in string or integer and all the methods and functions must ac
 
 <ul><li><code><span class="type">Integer</span></code> unixtime.</li></ul>
 
-<h3>Date.unixtime()  <span class="static">static</span></h3>
+<h3><a name="staticQmethodQunixtimeQ"></a> Date.unixtime()  <span class="static">static</span></h3>
 
 <p>Return current unixtime. </p>
 
@@ -96,7 +96,7 @@ be specified both in string or integer and all the methods and functions must ac
 
 <ul><li><code><span class="type">Integer</span></code> current unixtime.</li></ul>
 
-<h3>Date.fillEmptyDays(<span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
+<h3><a name="staticQmethodQfillemptydaysQfromqqto"></a> Date.fillEmptyDays(<span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
 
 <p>Return an array of Dates (days) between two dates, inclusive. </p>
 
@@ -146,7 +146,7 @@ e.g. 570 for 9:30. </p>
 
 <ul><li><code><span class="type">Integer</span></code> day minute</li></ul>
 
-<h3>Date.minuteToFormat(<span class="parameter">minute</span>, <span class="parameter">format</span>)  <span class="static">static</span></h3>
+<h3><a name="staticQmethodQminutetoformatQminuteqqformat"></a> Date.minuteToFormat(<span class="parameter">minute</span>, <span class="parameter">format</span>)  <span class="static">static</span></h3>
 
 <p>A helper function. Format given day minute according to format (see date-utils format specifiers). </p>
 

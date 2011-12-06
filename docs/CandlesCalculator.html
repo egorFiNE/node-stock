@@ -39,9 +39,9 @@
 	<body>
 		<h1>CandlesCalculator.js</h1>
 
-<ul><li><a href="#classQcandlescalculatorQtickstorageqqperiodsizeinminutes">CandlesCalculator(tickStorage, periodSizeInMinutes)</a></li><li><a href="#methodQdumpminutesQfromqqto">dumpMinutes(from, to)</a></li><li><a href="#methodQdumpcandlesQfromqqto">dumpCandles(from, to)</a></li><li><a href="#methodQgetcandleQminute">getCandle(minute)</a></li><li><a href="#staticQmethodQgetcandlesQdbpathqqsymbolqqdaystampqqperiodqqfromqqto">getCandles(dbPath, symbol, daystamp, period, from, to)</a></li></ul>
+<ul><li><a href="#classQcandlescalculatorQtickstorageqqperiodsizeinminutes">CandlesCalculator(tickStorage, periodSizeInMinutes)</a></li><li><a href="#methodQdumpminutesQfromqqto">dumpMinutes(from, to)</a></li><li><a href="#methodQdumpcandlesQfromqqto">dumpCandles(from, to)</a></li><li><a href="#methodQgetcandleQminute">getCandle(minute)</a></li><li><a href="#staticQmethodQgetcandlesoftickstorageQtickstorageqqperiodqqfromqqto">getCandlesOfTickStorage(tickStorage, period, from, to)</a></li><li><a href="#staticQmethodQgetcandlesQdbpathqqsymbolqqdaystampqqperiodqqfromqqto">getCandles(dbPath, symbol, daystamp, period, from, to)</a></li></ul>
 
-<h2><span class="class">CandlesCalculator(<span class="parameter">tickStorage</span>, <span class="parameter">periodSizeInMinutes</span>)</span></h2>
+<h2><a name="classQcandlescalculatorQtickstorageqqperiodsizeinminutes"></a> <span class="class">CandlesCalculator(<span class="parameter">tickStorage</span>, <span class="parameter">periodSizeInMinutes</span>)</span></h2>
 
 <p>Candles calculator from data supplied by TickStorage. </p>
 
@@ -91,11 +91,11 @@ console.log("Opened at %d", candle.o); // remember that prices are integer</code
 
 <ul><li>candle structure (see above) or null if there is no candle for this minute.</li></ul>
 
-<h3>CandlesCalculator.getCandles(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>, <span class="parameter">daystamp</span>, <span class="parameter">period</span>, <span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
+<h3><a name="staticQmethodQgetcandlesoftickstorageQtickstorageqqperiodqqfromqqto"></a> CandlesCalculator.getCandlesOfTickStorage(<span class="parameter">tickStorage</span>, <span class="parameter">period</span>, <span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
 
-<p>Utility method: all of the above in a single call.abstract</p>
+<p>Utility method: all of the above in a single call. </p>
 
-<ul><li><code><span class="type">String</span></code> <code><strong>dbPath</strong></code> &#8212; Path to database (see TickStorage).</li><li><code><span class="type">String</span></code> <code><strong>symbol</strong></code> &#8212; Symbol to load.</li><li><code><span class="type">Integer</span></code> <code><strong>daystamp</strong></code> &#8212; Daystamp to load.</li><li><code><span class="type">Integer</span></code> <code><strong>period</strong></code> &#8212; Period size in minutes.</li><li><code><span class="type">Integer</span></code> <code><strong>from</strong></code> &#8212; Get candles starting from this minute.</li><li><code><span class="type">Integer</span></code> <code><strong>to</strong></code> &#8212; Get candles till this minute.</li></ul>
+<ul><li><code><span class="type">TickStorage</span></code> <code><strong>tickStorage</strong></code> &#8212; TickStorage that was already <code>load()</code>'ed. </li><li><code><span class="type">Integer</span></code> <code><strong>period</strong></code> &#8212; Period size in minutes.</li><li><code><span class="type">Integer</span></code> <code><strong>from</strong></code> &#8212; Get candles starting from this minute.</li><li><code><span class="type">Integer</span></code> <code><strong>to</strong></code> &#8212; Get candles till this minute.</li></ul>
 
 <p>Returns:</p>
 
@@ -113,5 +113,12 @@ console.log("Opened at %d", candle.o); // remember that prices are integer</code
 	{ h: 265000, l: 260000, o: 260000, c: 264100, v: 500, t: 3, hour: 10, minute: 3, m: 603 },
 	...
 ];</code></pre>
+
+<h3><a name="staticQmethodQgetcandlesQdbpathqqsymbolqqdaystampqqperiodqqfromqqto"></a> CandlesCalculator.getCandles(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>, <span class="parameter">daystamp</span>, <span class="parameter">period</span>, <span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
+
+<p>Utility method: just like <code>getCandlesOfTickStorage()</code>, but will also instantiate and load the TickStorage for you. See
+<code>getCandlesOfTickStorage()</code> for description.</p>
+
+<ul><li><code><span class="type">String</span></code> <code><strong>dbPath</strong></code> &#8212; Path to database (see TickStorage).</li><li><code><span class="type">String</span></code> <code><strong>symbol</strong></code> &#8212; Symbol to load.</li><li><code><span class="type">Integer</span></code> <code><strong>daystamp</strong></code> &#8212; Daystamp to load.</li><li><code><span class="type">Integer</span></code> <code><strong>period</strong></code> &#8212; Period size in minutes.</li><li><code><span class="type">Integer</span></code> <code><strong>from</strong></code> &#8212; Get candles starting from this minute.</li><li><code><span class="type">Integer</span></code> <code><strong>to</strong></code> &#8212; Get candles till this minute.</li></ul>
 	</body>
 </html>
