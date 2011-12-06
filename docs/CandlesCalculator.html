@@ -39,30 +39,79 @@
 	<body>
 		<h1>CandlesCalculator.js</h1>
 
-<ul><li><a href="#classQcandlescalculatorQminutes">CandlesCalculator(minutes)</a></li><li><a href="#methodQclearperiodQ">clearPeriod()</a></li><li><a href="#methodQticktimeQunixtime">tickTime(unixtime)</a></li><li><a href="#methodQfinishQ">finish()</a></li><li><a href="#methodQcalculatestartunixtimeQunixtime">calculateStartUnixtime(unixtime)</a></li><li><a href="#methodQaddtickQunixtimeqqpriceqqvolume">addTick(unixtime, price, volume)</a></li><li><a href="#methodQemitcandleQ">emitCandle()</a></li><li><a href="#staticQmethodQgetcandlesQdbpathqqsymbolqqdaystampqqperiod">getCandles(dbPath, symbol, daystamp, period)</a></li><li><a href="#methodQunserializeQdata">unserialize(data)</a></li><li><a href="#methodQserializeQ">serialize()</a></li></ul>
+<ul><li><a href="#classQcandlescalculatorQtickstorageqqperiodsizeinminutes">CandlesCalculator(tickStorage, periodSizeInMinutes)</a></li><li><a href="#methodQdumpminutesQfromqqto">dumpMinutes(from, to)</a></li><li><a href="#methodQdumpcandlesQfromqqto">dumpCandles(from, to)</a></li><li><a href="#methodQgetcandleQminute">getCandle(minute)</a></li><li><a href="#staticQmethodQgetcandlesQdbpathqqsymbolqqdaystampqqperiodqqfromqqto">getCandles(dbPath, symbol, daystamp, period, from, to)</a></li></ul>
 
-<h2><span class="class">CandlesCalculator(<span class="parameter">minutes</span>)</span></h2>
+<h2><span class="class">CandlesCalculator(<span class="parameter">tickStorage</span>, <span class="parameter">periodSizeInMinutes</span>)</span></h2>
 
-<p>Calculate OHLC data for ticks stream. FIXME: is this module even needed now? </p>
+<p>Candles calculator from data supplied by TickStorage. </p>
 
-<ul><li><code><span class="type">Integer</span></code> <code><strong>minutes</strong></code> &#8212; period size for which to calculate candles, in minutes.</li></ul>
+<p>Every candle is an <code>Object</code> (read - a hash array) like this: </p>
 
-<h3><a name="methodQclearperiodQ"></a> clearPeriod()</h3>
+<pre><code>{ h: 261000, l: 261000, o: 261000, c: 261000, v: 100, t: 1, hour: 10, minute: 0, m: 600 }</code></pre>
 
-<h3><a name="methodQticktimeQunixtime"></a> tickTime(<span class="parameter">unixtime</span>)</h3>
+<ul><li><code>h</code> - High </li><li><code>l</code> - Low</li><li><code>o</code> - Open</li><li><code>c</code> - Close</li><li><code>v</code> - Volume</li><li><code>t</code> - Ticks count</li><li><code>m</code> - Candle day minute (<code>575</code> for 9:35)</li><li><code>hour</code> - Candle hour</li><li><code>minute</code> - Candle minute</li></ul>
 
-<h3><a name="methodQfinishQ"></a> finish()</h3>
+<p>High, low, open, close and volume are calculated only on market ticks. Ticks count is calculated using all ticks, 
+including aftermarket (doesn't matter, though - there are not so many aftermarket ticks during the trade session).</p>
 
-<h3><a name="methodQcalculatestartunixtimeQunixtime"></a> calculateStartUnixtime(<span class="parameter">unixtime</span>)</h3>
+<p><em>Every candle is named after it's last minute time.</em> I.e. candle of minute 575 (9:35) is calculated over all the ticks
+between 9:00:00 and 9:34:59 inclusive. </p>
 
-<h3><a name="methodQaddtickQunixtimeqqpriceqqvolume"></a> addTick(<span class="parameter">unixtime</span>, <span class="parameter">price</span>, <span class="parameter">volume</span>)</h3>
+<p>Example: </p>
 
-<h3><a name="methodQemitcandleQ"></a> emitCandle()</h3>
+<pre><code>var tickStorage = new TickStorage(dbPath, 'AAPL', 20111117);
+test.ok(tickStorage.load());
 
-<h3>CandlesCalculator.getCandles(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>, <span class="parameter">daystamp</span>, <span class="parameter">period</span>)  <span class="static">static</span></h3>
+candlesCalculator = new CandlesCalculator(tickStorage, 5);
+var candle = candlesCalculator.getCandle(600); // get candle for 9:55-10:00 
 
-<h3><a name="methodQunserializeQdata"></a> unserialize(<span class="parameter">data</span>)</h3>
+console.log("Opened at %d", candle.o); // remember that prices are integer</code></pre>
 
-<h3><a name="methodQserializeQ"></a> serialize()</h3>
+<ul><li><code><span class="type">TickStorage</span></code> <code><strong>tickStorage</strong></code> &#8212; TickStorage instance, must be already <code>load()</code>'ed. </li><li><code><span class="type">Integer</span></code> <code><strong>periodSizeInMinutes</strong></code> &#8212; obvious. By default it's 1. </li></ul>
+
+<h3><a name="methodQdumpminutesQfromqqto"></a> dumpMinutes(<span class="parameter">from</span>, <span class="parameter">to</span>)</h3>
+
+<p>Debug tool: dump one-minute sized candles.</p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>from</strong></code> &#8212; dump since this minute</li><li><code><span class="type">Integer</span></code> <code><strong>to</strong></code> &#8212; dump till this minute</li></ul>
+
+<h3><a name="methodQdumpcandlesQfromqqto"></a> dumpCandles(<span class="parameter">from</span>, <span class="parameter">to</span>)</h3>
+
+<p>Debug tool: dump calculated candles.</p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>from</strong></code> &#8212; dump since this minute</li><li><code><span class="type">Integer</span></code> <code><strong>to</strong></code> &#8212; dump till this minute</li></ul>
+
+<h3><a name="methodQgetcandleQminute"></a> getCandle(<span class="parameter">minute</span>)</h3>
+
+<p>Get calculated candle.</p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>minute</strong></code> &#8212; candle minute to get to. Always the last minute of a candle, so ask for "575" to get data for 9:30-9:35.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li>candle structure (see above) or null if there is no candle for this minute.</li></ul>
+
+<h3>CandlesCalculator.getCandles(<span class="parameter">dbPath</span>, <span class="parameter">symbol</span>, <span class="parameter">daystamp</span>, <span class="parameter">period</span>, <span class="parameter">from</span>, <span class="parameter">to</span>)  <span class="static">static</span></h3>
+
+<p>Utility method: all of the above in a single call.abstract</p>
+
+<ul><li><code><span class="type">String</span></code> <code><strong>dbPath</strong></code> &#8212; Path to database (see TickStorage).</li><li><code><span class="type">String</span></code> <code><strong>symbol</strong></code> &#8212; Symbol to load.</li><li><code><span class="type">Integer</span></code> <code><strong>daystamp</strong></code> &#8212; Daystamp to load.</li><li><code><span class="type">Integer</span></code> <code><strong>period</strong></code> &#8212; Period size in minutes.</li><li><code><span class="type">Integer</span></code> <code><strong>from</strong></code> &#8212; Get candles starting from this minute.</li><li><code><span class="type">Integer</span></code> <code><strong>to</strong></code> &#8212; Get candles till this minute.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">Array</span></code> List of candles, zero-based, guaranteed to have each period.</li></ul>
+
+<p>For periods that have no data (there was no ticks in that period) the entry will only contain <code>hour</code>, 
+<code>minute</code> and <code>m</code> keys.</p>
+
+<p>Example data: </p>
+
+<pre><code>[
+	{ h: 261000, l: 261000, o: 261000, c: 261000, v: 100, t: 1, hour: 10, minute: 0, m: 600 },
+	{ h: 261000, l: 261000, o: 261000, c: 261000, v: 200, t: 2, hour: 10, minute: 1, m: 601 },
+	{ hour: 10, minute: 2, m: 602 }, // no data for 602
+	{ h: 265000, l: 260000, o: 260000, c: 264100, v: 500, t: 3, hour: 10, minute: 3, m: 603 },
+	...
+];</code></pre>
 	</body>
 </html>

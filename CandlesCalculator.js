@@ -1,159 +1,268 @@
 util = require('util');
-fs = require('fs');
-events = require('events');
 
 /** 
 
-Calculate OHLC data for ticks stream. FIXME: is this module even needed now? 
+Candles calculator from data supplied by TickStorage. 
 
-@param {Integer} minutes period size for which to calculate candles, in minutes.
+Every candle is an <code>Object</code> (read - a hash array) like this: 
 
- */
+	{ h: 261000, l: 261000, o: 261000, c: 261000, v: 100, t: 1, hour: 10, minute: 0, m: 600 }
 
-function CandlesCalculator(minutes) {
-	events.EventEmitter.call(this);
+* <code>h</code> - High 
+* <code>l</code> - Low
+* <code>o</code> - Open
+* <code>c</code> - Close
+* <code>v</code> - Volume
+* <code>t</code> - Ticks count
+* <code>m</code> - Candle day minute (<code>575</code> for 9:35)
+* <code>hour</code> - Candle hour
+* <code>minute</code> - Candle minute
+
+High, low, open, close and volume are calculated only on market ticks. Ticks count is calculated using all ticks, 
+including aftermarket (doesn't matter, though - there are not so many aftermarket ticks during the trade session).
+
+*Every candle is named after it's last minute time.* I.e. candle of minute 575 (9:35) is calculated over all the ticks
+between 9:00:00 and 9:34:59 inclusive. 
+
+Example: 
+
+	var tickStorage = new TickStorage(dbPath, 'AAPL', 20111117);
+	test.ok(tickStorage.load());
 	
-	this.startUnixtime = 0;
-	this.lastPeriod=0;
+	candlesCalculator = new CandlesCalculator(tickStorage, 5);
+	var candle = candlesCalculator.getCandle(600); // get candle for 9:55-10:00 
+
+	console.log("Opened at %d", candle.o); // remember that prices are integer
+
+@param {TickStorage} tickStorage TickStorage instance, must be already <code>load()</code>'ed. 
+@param {Integer} periodSizeInMinutes obvious. By default it's 1. 
+
+*/
+
+function CandlesCalculator(tickStorage, periodSizeInMinutes) {
+	this.periodSize = periodSizeInMinutes || 1;
+	this._tickStorage = tickStorage;
 	
-	this.periodLength = minutes*60;
+	this._calculatedMinuteIndex=[];
+	this.candles={}; 
 	
-	this.lastUnixtime=0;
-	
-	this.clearPeriod();
+	this._calculateMinutes();
+	this._calculate();
 }
-util.inherits(CandlesCalculator, events.EventEmitter);
-module.exports = CandlesCalculator;
 
-
-
-CandlesCalculator.prototype.clearPeriod = function() {
-	this.currentVolume=0;
-	this.currenTicksCount=0;
-	this.currentHigh=Number.MIN_VALUE;
-	this.currentLow=Number.MAX_VALUE;
-	this.currentOpen=0;
-	this.currentClose=0;
-}
-CandlesCalculator.prototype.tickTime = function(unixtime) {
-	this.addTick(unixtime);
-}
-
-CandlesCalculator.prototype.finish = function() {
-	this.emitCandle();
-}
-
-CandlesCalculator.prototype.calculateStartUnixtime = function(unixtime) {
-	var q = Date.parseUnixtime(unixtime);
-	q.clearTime();
-	this.startUnixtime = q.unixtime();
-}
-
-CandlesCalculator.prototype.addTick = function(unixtime, price, volume) {
-	if (this.startUnixtime==0) {
-		this.calculateStartUnixtime(unixtime);
-	}
+CandlesCalculator.prototype._findOc = function(minute, openPos, closePos) {
+	var i, tick;
 	
-	if (unixtime<this.lastUnixtime) {
-		return; // blast from the past
-	}
-	this.lastUnixtime=unixtime;
+	var open=null, close=null, _openPos=null;
 	
-	var second = unixtime - this.startUnixtime;
-	var period = (second/this.periodLength) >> 0;
-	
-	if (this.lastPeriod==0) {
-		this.lastPeriod=period;
-	}
-	
-	if (period>this.lastPeriod) {
-		this.emitCandle();
-		this.clearPeriod();
-		this.lastPeriod = period;
-	}
-	
-	if (price && volume) {
-		this.currentClose = price;
-		this.currentHigh = Math.max(this.currentHigh, price);
-		this.currentLow  = Math.min(this.currentLow, price);
-		if (this.currentOpen==0) {
-			this.currentOpen = price;
+	for (i=openPos;i<=closePos;i++) {
+		tick = this._tickStorage.tickAtPosition(i);
+		if (tick.isMarket) {
+			open=tick.price;
+			_openPos = i;
+			break;
 		}
-		this.currentVolume+=volume;
-		this.currenTicksCount++;
-	}
-}
-
-CandlesCalculator.prototype.emitCandle = function() {
-	if (this.currentVolume<=0) {
-		return;
 	}
 	
-	var seconds = this.startUnixtime + ((this.lastPeriod+1) * (this.periodLength));
-	var da = Date.parseUnixtime(seconds);
-	var HH = da.getHours();
-	var MM = da.getMinutes();
-
-	this.emit('candle', HH, MM,
-		this.currentHigh, this.currentLow, this.currentOpen, this.currentClose, this.currentVolume, this.currenTicksCount
-	);
-	return;
-}
-
-CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period) {
-	var candles=[];
-
-	var candlesCalculator = new CandlesCalculator(period);
-	candlesCalculator.on('candle', function(hour, minute, h,l,o,c,v,t) {
-		if (hour==16 && minute>0) { 
-			return;
-		}
-		
-		candles.push({
-			hour:hour,
-			minute:minute,
-			o:o,
-			c:c,
-			h:h,
-			l:l,
-			v:v,
-			t:t
-		});
-	});
-
-	var tickStorage;
-	try { 
-		tickStorage = new TickStorage(dbPath, symbol, daystamp);
-		tickStorage.load();
-	} catch(e) {
+	if (!open) {
 		return null;
 	}
 
-	var tick;
-	while ((tick = tickStorage.nextTick())) {
-		if (!tick.isMarket) {
-			continue;
+	for (i=closePos;i>=_openPos;i--) {
+		tick = this._tickStorage.tickAtPosition(i);
+		if (tick.isMarket) {
+			close=tick.price;
+			break;
 		}
-		candlesCalculator.addTick(tick.unixtime, tick.price, tick.volume);
 	}
-	candlesCalculator.finish();
-	return candles;
+	
+	if (!close) {
+		return null;
+	}
+
+	return {
+		o: open,
+		c: close
+	}
 }
 
+/** 
 
-CandlesCalculator.prototype.unserialize = function(data) { 
-	var self=this;
-	Object.keys(data).forEach(function(key) {
-		self[key]=data[key];
-	});
+Debug tool: dump one-minute sized candles.
+
+@param {Integer} from dump since this minute
+@param {Integer} to dump till this minute
+
+ */
+
+CandlesCalculator.prototype.dumpMinutes = function(from, to) {
+	var i;
+	for (i=from;i<=to;i++) {
+		console.log("%d: %s", i, util.inspect(this._calculatedMinuteIndex[i]));
+	}
 }
 
-CandlesCalculator.prototype.serialize = function() { 
-	var self=this;
-	var result = {};
-	Object.keys(this).forEach(function(key) {
-		result[key] = self[key];
-	});
-	delete result._events;
-	return result;
+/** 
+
+Debug tool: dump calculated candles.
+
+@param {Integer} from dump since this minute
+@param {Integer} to dump till this minute
+
+ */
+
+CandlesCalculator.prototype.dumpCandles = function(from, to) {
+	var i;
+	for (i=from;i<=to;i+=this.periodSize) {
+		console.log("%d: %s", i, util.inspect(this.candles[i]));
+	}
 }
+
+/** 
+
+Get calculated candle.
+
+@param {Integer} minute candle minute to get to. Always the last minute of a candle, so ask for "575" to get data for 9:30-9:35.
+
+@return candle structure (see above) or null if there is no candle for this minute.
+
+*/
+
+CandlesCalculator.prototype.getCandle = function(minute) {
+	return this.candles[minute] || null;
+}
+
+CandlesCalculator.prototype._calculate = function() {
+	var i;
+	for(i=this.periodSize;i<=1440;i+=this.periodSize) {
+		this.candles[i] = this._calculatePeriod(i);
+		CandlesCalculator._setCandleHourMinute(this.candles[i], i);
+	}
+}
+
+CandlesCalculator.prototype._calculatePeriod = function(period) {
+	var open=0, close=0, high=Number.MIN_VALUE, low=Number.MAX_VALUE, volume=0, ticks=0;
+	
+	var m;
+	for (m=period-this.periodSize;m<period;m++) {
+		var _minute = this._calculatedMinuteIndex[m];
+		if (!open) {
+			open = _minute.o;
+			close = _minute.c;
+		}
+		
+		if (_minute.c) {
+			close = _minute.c;
+			high = Math.max(high, _minute.h);
+			low = Math.min(low, _minute.l);
+			volume+=_minute.v;
+			ticks+=_minute.t;
+		}
+		
+	}
+	
+	if (open) {
+		return {
+			h: high,
+			l: low,
+			o: open,
+			c: close,
+			v: volume,
+			t: ticks
+		}
+	} else { 
+		return null;
+	}
+}
+
+CandlesCalculator.prototype._calculateMinutes = function() {
+	var _newMinuteIndex=[];
+	
+	var m;
+	for (m=0;m<1440;m++) {
+		_newMinuteIndex[m]={
+			h: 0,
+			l: 0,
+			o: 0,
+			c: 0
+		};
+		
+		var minute = this._tickStorage.minuteIndex.index[m];
+		if (minute) {
+			var oc = this._findOc(m, minute.o, minute.c);
+			if (oc) {
+				_newMinuteIndex[m].h=minute.h;
+				_newMinuteIndex[m].l=minute.l;
+				_newMinuteIndex[m].o=oc.o;
+				_newMinuteIndex[m].c=oc.c;
+				_newMinuteIndex[m].v=minute.v;
+				_newMinuteIndex[m].t=minute.c-minute.o+1;
+			}
+		}
+	}
+	
+	this._calculatedMinuteIndex = _newMinuteIndex;
+}
+
+CandlesCalculator._setCandleHourMinute = function(candle, minute) { 
+	if (candle) {
+		var d = new Date();
+		d.clearTime();
+		d.setCurrentDayMinute(minute);
+		candle.hour = d.getHours();
+		candle.minute = d.getMinutes();
+		candle.m = minute;
+	}
+}
+
+/** 
+
+Utility method: all of the above in a single call.abstract
+
+@param {String} dbPath Path to database (see TickStorage).
+@param {String} symbol Symbol to load.
+@param {Integer} daystamp Daystamp to load.
+@param {Integer} period Period size in minutes.
+@param {Integer} from Get candles starting from this minute.
+@param {Integer} to Get candles till this minute.
+
+@return {Array} List of candles, zero-based, guaranteed to have each period. 
+
+For periods that have no data (there was no ticks in that period) the entry will only contain <code>hour</code>, 
+<code>minute</code> and <code>m</code> keys.
+
+Example data: 
+
+	[
+		{ h: 261000, l: 261000, o: 261000, c: 261000, v: 100, t: 1, hour: 10, minute: 0, m: 600 },
+		{ h: 261000, l: 261000, o: 261000, c: 261000, v: 200, t: 2, hour: 10, minute: 1, m: 601 },
+		{ hour: 10, minute: 2, m: 602 }, // no data for 602
+		{ h: 265000, l: 260000, o: 260000, c: 264100, v: 500, t: 3, hour: 10, minute: 3, m: 603 },
+		...
+	];
+
+*/
+
+CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period, from, to) {
+	var tickStorage = new TickStorage(dbPath, symbol, daystamp);
+	if (!tickStorage.load()) {
+		return null;
+	}
+	
+	var _result=[];
+	
+	from = from||0;
+	to = to||1440;
+	
+	var candles = new CandlesCalculator(tickStorage, period);
+	var i;
+	for(i=from+period;i<=to;i+=period) {
+		var candle = candles.getCandle(i) || {};
+		CandlesCalculator._setCandleHourMinute(candle, i);
+		_result.push(candle);
+	}
+	
+	return _result;
+}
+
+module.exports = CandlesCalculator;
