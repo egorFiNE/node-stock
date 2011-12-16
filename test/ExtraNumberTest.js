@@ -1,16 +1,12 @@
 require('../ExtraNumber');
 
-function zeroP(number) { 
-	if (number<10) { 
-		return '000'+number;
-	}
-	if (number<100) {
-		return '00'+number;
-	}
-	if (number<1000) {
-		return '0'+number;
-	}
-	return number;
+exports['number pad'] = function(test) {
+	test.expect(4);
+	test.equal((23).pad(4), "0023");
+	test.equal((23).pad(3), "023");
+	test.equal((23).pad(2), "23");
+	test.equal((23).pad(1), "23");
+	test.done();
 }
 
 exports['check float errors'] = function(test) {
@@ -21,7 +17,7 @@ exports['check float errors'] = function(test) {
 	
 	var i=0;
 	for(i=0;i<=9999;i++) {
-		var z = zeroP(i);
+		var z = i.pad(4);
 		var parsed = parseInt(parseFloat("1."+z)*10000);
 		var bigint = parseInt("1"+z);
 		if (parsed!=bigint) { 
@@ -37,8 +33,8 @@ exports['check float errors'] = function(test) {
 	test.done();
 };
 
-
 exports['human-readable number'] = function(test) {
 	test.equal(parseInt(23.34*10000).humanReadablePrice(), "23.34");
 	test.done();
 }
+

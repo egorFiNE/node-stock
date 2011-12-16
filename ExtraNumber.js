@@ -26,3 +26,26 @@ Example:
 Number.prototype.humanReadablePrice = function() {
 	return (this/10000).toFixed(2);
 }
+
+/**
+
+Will return zero-padded number.
+
+@param {Integer} length pad length.
+
+@return {String} human-readable zero-padded number.
+
+Example: 
+
+	var something = 9;
+	something.pad(2); // "09";
+
+ */
+Number.prototype.pad = function(length) {
+	var _num = this.toString();
+	if (_num.length > length) { 
+		return _num;
+	}
+	
+  return (Array(length).join('0') + this).slice(-length);
+}

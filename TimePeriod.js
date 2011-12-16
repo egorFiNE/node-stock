@@ -340,12 +340,5 @@ Helper function. Will return time string for day minute.
 */
 
 TimePeriod.minuteToTime = function(m) {
-	return parseInt(m/60) + ':' +_numberTotoDoubleZeroPaddedString(parseInt(m%60));
-}
-
-function _numberTotoDoubleZeroPaddedString(n) {
-	if (n<10) {
-		return '0' + n;
-	}
-	return ''+n;
+	return parseInt(m/60) + ':' +(parseInt(m%60)).pad(2);
 }
