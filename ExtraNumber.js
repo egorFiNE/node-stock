@@ -49,3 +49,31 @@ Number.prototype.pad = function(length) {
 	
   return (Array(length).join('0') + this).slice(-length);
 }
+
+/**
+
+Will return number shorted to an order of magnitude with one-letter description.
+
+@return {String} human-readable number
+
+Example: 
+
+	var something = 93000000;
+	something.humanReadableOrder(); // "9.3m";
+
+ */
+Number.prototype.humanReadableOrder = function() {
+	if (this>=1000000000) {
+		return (this/1000000000).toFixed(1)+'b';
+	}
+
+	if (this>=1000000) {
+		return (this/1000000).toFixed(1)+'m';
+	}
+
+	if (this>=1000) {
+		return (this/1000).toFixed(1)+'k';
+	}
+	
+	return this+'';
+}

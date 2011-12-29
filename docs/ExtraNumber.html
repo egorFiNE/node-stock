@@ -39,7 +39,7 @@
 	<body>
 		<h1>ExtraNumber.js</h1>
 
-<ul><li><a href="#classQnumberQ">Number()</a></li><li><a href="#methodQhumanreadablepriceQ">humanReadablePrice()</a></li></ul>
+<ul><li><a href="#classQnumberQ">Number()</a></li><li><a href="#methodQhumanreadablepriceQ">humanReadablePrice()</a></li><li><a href="#methodQpadQlength">pad(length)</a></li><li><a href="#methodQhumanreadableorderQ">humanReadableOrder()</a></li></ul>
 
 <h2><a name="classQnumberQ"></a> <span class="class">Number()</span></h2>
 
@@ -57,5 +57,33 @@
 
 <pre><code>var price = 233700;
 price.humanReadablePrice(); // "23.37"</code></pre>
+
+<h3><a name="methodQpadQlength"></a> pad(<span class="parameter">length</span>)</h3>
+
+<p>Will return zero-padded number.</p>
+
+<ul><li><code><span class="type">Integer</span></code> <code><strong>length</strong></code> &#8212; pad length.</li></ul>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">String</span></code> human-readable zero-padded number.</li></ul>
+
+<p>Example: </p>
+
+<pre><code>var something = 9;
+something.pad(2); // "09";</code></pre>
+
+<h3><a name="methodQhumanreadableorderQ"></a> humanReadableOrder()</h3>
+
+<p>Will return number shorted to an order of magnitude with one-letter description.</p>
+
+<p>Returns:</p>
+
+<ul><li><code><span class="type">String</span></code> human-readable number</li></ul>
+
+<p>Example: </p>
+
+<pre><code>var something = 93000000;
+something.humanReadableOrder(); // "9.3m";</code></pre>
 	</body>
 </html>

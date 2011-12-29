@@ -38,3 +38,7 @@ exports['human-readable number'] = function(test) {
 	test.done();
 }
 
+exports['human-readable order'] = function(test) {
+	test.equal((9300000).humanReadableOrder(), "9.3m");
+	test.done();
+}
