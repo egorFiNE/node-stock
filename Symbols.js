@@ -1,6 +1,7 @@
-fs = require('fs');
-path = require('path');
-Symbol = require('./Symbol');
+var 
+	fs = require('fs'),
+	path = require('path'),
+	Symbol = require('./Symbol');
 
 /**
 
@@ -42,7 +43,6 @@ Symbols.prototype.load = function() {
 	
 	var files = fs.readdirSync(this.dbPath);
 	files = files.sort();
-	var i=0;
 	var symbolsUnsorted = [];
 	files.forEach(function(name) {
 		if (name.substr(0,1)!=='.' && name.toUpperCase()===name) {
@@ -54,7 +54,7 @@ Symbols.prototype.load = function() {
 	this.position=0;
 	
 	return true;
-}
+};
 
 /**
 
@@ -69,7 +69,7 @@ exists in dbpath.
 
 Symbols.prototype.exists = function(symbol) {
 	return this.symbols.indexOf((symbol || '').toUpperCase()) >= 0;
-}
+};
 
 /** 
 
@@ -79,7 +79,7 @@ Rewind the iterator position back to zero.
 
 Symbols.prototype.rewind = function() {
 	this.position=0;
-}
+};
 
 /** 
 
@@ -94,7 +94,7 @@ Symbols.prototype.next = function() {
 		return new Symbol(this.dbPath, this.symbols[this.position++]);
 	}
 	return null;
-}
+};
 
 /** 
 
@@ -106,7 +106,7 @@ Will return the count of symbols in tickers database.
 
 Symbols.prototype.count = function() {
 	return this.symbols.length;
-}
+};
 
 module.exports = Symbols;
 

@@ -1,4 +1,8 @@
-util = require('util');
+/*jslint devel: false, node: true, sloppy: true, eqeq: true, es5: true, vars: true, white: true, nomen: true, plusplus: true, maxerr: 50, indent: 4 */
+
+var 
+	util = require('util'),
+	TickStorage = require('./TickStorage');
 
 /** 
 
@@ -50,7 +54,7 @@ function CandlesCalculator(tickStorage, periodSizeInMinutes) {
 	this._calculate();
 }
 
-CandlesCalculator.prototype._findOc = function(minute, openPos, closePos) {
+CandlesCalculator.prototype._findOc = function(openPos, closePos) {
 	var i, tick;
 	
 	var open=null, close=null, _openPos=null;
@@ -83,8 +87,8 @@ CandlesCalculator.prototype._findOc = function(minute, openPos, closePos) {
 	return {
 		o: open,
 		c: close
-	}
-}
+	};
+};
 
 /** 
 
@@ -100,7 +104,7 @@ CandlesCalculator.prototype.dumpMinutes = function(from, to) {
 	for (i=from;i<=to;i++) {
 		console.log("%d: %s", i, util.inspect(this._calculatedMinuteIndex[i]));
 	}
-}
+};
 
 /** 
 
@@ -116,7 +120,7 @@ CandlesCalculator.prototype.dumpCandles = function(from, to) {
 	for (i=from;i<=to;i+=this.periodSize) {
 		console.log("%d: %s", i, util.inspect(this.candles[i]));
 	}
-}
+};
 
 /** 
 
@@ -130,7 +134,7 @@ Get calculated candle.
 
 CandlesCalculator.prototype.getCandle = function(minute) {
 	return this.candles[minute] || null;
-}
+};
 
 CandlesCalculator.prototype._calculate = function() {
 	var i;
@@ -138,7 +142,7 @@ CandlesCalculator.prototype._calculate = function() {
 		this.candles[i] = this._calculatePeriod(i);
 		CandlesCalculator._setCandleHourMinute(this.candles[i], i);
 	}
-}
+};
 
 CandlesCalculator.prototype._calculatePeriod = function(period) {
 	var open=0, close=0, high=Number.MIN_VALUE, low=Number.MAX_VALUE, volume=0, ticks=0;
@@ -169,11 +173,11 @@ CandlesCalculator.prototype._calculatePeriod = function(period) {
 			c: close,
 			v: volume,
 			t: ticks
-		}
+		};
 	} else { 
 		return null;
 	}
-}
+};
 
 CandlesCalculator.prototype._calculateMinutes = function() {
 	var _newMinuteIndex=[];
@@ -189,7 +193,7 @@ CandlesCalculator.prototype._calculateMinutes = function() {
 		
 		var minute = this._tickStorage.minuteIndex.index[m];
 		if (minute) {
-			var oc = this._findOc(m, minute.o, minute.c);
+			var oc = this._findOc(minute.o, minute.c);
 			if (oc) {
 				_newMinuteIndex[m].h=minute.h;
 				_newMinuteIndex[m].l=minute.l;
@@ -202,7 +206,7 @@ CandlesCalculator.prototype._calculateMinutes = function() {
 	}
 	
 	this._calculatedMinuteIndex = _newMinuteIndex;
-}
+};
 
 CandlesCalculator._setCandleHourMinute = function(candle, minute) { 
 	if (candle) {
@@ -213,7 +217,7 @@ CandlesCalculator._setCandleHourMinute = function(candle, minute) {
 		candle.minute = d.getMinutes();
 		candle.m = minute;
 	}
-}
+};
 
 /** 
 
@@ -256,7 +260,7 @@ CandlesCalculator.getCandlesOfTickStorage = function(tickStorage, period, from, 
 	}
 	
 	return _result;
-}
+};
 
 /** 
 
@@ -279,7 +283,9 @@ CandlesCalculator.getCandles = function(dbPath, symbol, daystamp, period, from, 
 	}
 	
 	return CandlesCalculator.getCandlesOfTickStorage(tickStorage, period, from, to);
-}
+};
 
 
 module.exports = CandlesCalculator;
+
+

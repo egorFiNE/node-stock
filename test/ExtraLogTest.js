@@ -1,11 +1,11 @@
 require('date-utils');
-ExtraLog = require('../ExtraLog');
+var ExtraLog = require('../ExtraLog');
 
 exports['price format'] = function(test) {
 	test.expect(4);
 	
 	var d = new Date();
-	d.setHours(13,23,41,00);
+	d.setHours(13,23,41,0);
 	d.setMonth(11, 29);
 	d.setYear(2011);
 	

@@ -38,13 +38,13 @@ exports['current day minute'] = function(test) {
 	test.equal(day.toFormat('HH24:MI'), '23:59');
 
 	test.done();
-}
+};
 
 exports['minutes helper'] = function(test) {
 	test.expect(1);
 	test.equal(Date.minuteToFormat(400,  'HH24:MI'), '06:40');
 	test.done();
-}
+};
 
 exports['fill empty days'] = function(test) {
 	test.expect(4);
@@ -72,4 +72,4 @@ exports['fill empty days'] = function(test) {
 	test.deepEqual(days, ['20110615']);
 	
 	test.done();
-}
+};

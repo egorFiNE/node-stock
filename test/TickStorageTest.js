@@ -1,11 +1,12 @@
-util = require('util');
-fs = require('fs');
-TickStorage = require('../TickStorage');
+var 
+	util = require('util'),
+	fs = require('fs'),
+	TickStorage = require('../TickStorage');
 
 exports['timezone test']= function(test) {
 	test.equal(process.env.TZ, 'America/New_York');
 	test.done();
-}
+};
 
 exports['basic read']= function(test) {
 	test.expect(6);
@@ -28,7 +29,7 @@ exports['basic read']= function(test) {
 	test.equal(totalCount, 118003, 'total count');
 	test.equal(tickStorage.count, totalCount, 'tickstorage.count');
 	test.done();
-}
+};
 
 exports['basic create'] = function(test) {
 	test.expect(7);
@@ -71,7 +72,7 @@ exports['basic create'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['set incorrect unixtime'] = function(test) {
 	test.expect(5);
@@ -108,7 +109,7 @@ exports['set incorrect unixtime'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['non-sequential unixtime'] = function(test) {
 	test.expect(7);
@@ -150,7 +151,7 @@ exports['non-sequential unixtime'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['create huge'] = function(test) {
 	if (process.env.SKIP_HUGE) {
@@ -192,7 +193,7 @@ exports['create huge'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['rewind and position'] = function(test) {
 	test.expect(13);
@@ -258,7 +259,7 @@ exports['rewind and position'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 
 	test.done();
-}
+};
 
 exports['create zero tick'] = function(test) {
 	test.expect(4);
@@ -282,7 +283,7 @@ exports['create zero tick'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['non-existing'] = function(test) {
 	test.expect(2);
@@ -295,7 +296,7 @@ exports['non-existing'] = function(test) {
 	test.ok(!tickStorage.save());
 	
 	test.done();
-}
+};
 
 exports['zero data'] = function(test) {
 	test.expect(6);
@@ -328,7 +329,7 @@ exports['zero data'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['market open/close pos'] = function(test) {
 	test.expect(4);
@@ -368,7 +369,7 @@ exports['market open/close pos'] = function(test) {
 	test.equal(tickStorage.marketClosePos, 5);
 
 	test.done();
-}
+};
 
 exports['market only'] = function(test) {
 	//test.expect(4);
@@ -403,7 +404,7 @@ exports['market only'] = function(test) {
 	tickStorage.remove();
 
 	test.done();
-}
+};
 
 exports['invalid data'] = function(test) {
 	test.expect(5);
@@ -496,7 +497,7 @@ exports['minute index'] = function(test) {
 	test.deepEqual(tickStorage.minuteIndex.index[minute+4], {o: 16, c: 18, v: 300, h: 300, l: 100});
 
 	test.done();
-}
+};
 
 exports['seek to minute']= function(test) {
 	//test.expect(9);
@@ -523,7 +524,7 @@ exports['seek to minute']= function(test) {
 	tickStorage = new TickStorage('/tmp', 'DDDD', '20110922');
 	tickStorage.prepareForNew();
 	
-	tickStorage.addTick(baseUnixtime+0,  100, 200, true);
+	tickStorage.addTick(baseUnixtime,    100, 200, true);
 	tickStorage.addTick(baseUnixtime+1,  100, 200, true);
 	
 	tickStorage.addTick(baseUnixtime+60, 102, 400, true);
@@ -559,7 +560,7 @@ exports['seek to minute']= function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['ignore out of day ticks'] = function(test) {
 	test.expect(9);
@@ -593,7 +594,7 @@ exports['ignore out of day ticks'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['blast from the future'] = function(test) {
 	test.expect(7);
@@ -624,7 +625,7 @@ exports['blast from the future'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['blast from the past'] = function(test) {
 	test.expect(7);
@@ -655,7 +656,7 @@ exports['blast from the past'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 
 exports['out of order data small'] = function(test) {
@@ -685,7 +686,7 @@ exports['out of order data small'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['out of order data larger'] = function(test) {
 	// basically it is the same as previous test but we add two ticks before and after and two future ticks in between
@@ -724,7 +725,7 @@ exports['out of order data larger'] = function(test) {
 	fs.rmdirSync('/tmp/DDDD/');
 	
 	test.done();
-}
+};
 
 exports['minute index with huge out of order data'] = function(test) {
 	test.expect(7);
@@ -754,5 +755,5 @@ exports['minute index with huge out of order data'] = function(test) {
 	test.deepEqual(tmpStorage.minuteIndex.index[15*60+30], {o: 125290, c: 125590, v: 337992, h: 245600, l: 245200});
 
 	test.done();
-}
+};
 

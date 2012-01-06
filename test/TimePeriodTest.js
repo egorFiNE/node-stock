@@ -1,4 +1,4 @@
-TimePeriod = require('../TimePeriod');
+var TimePeriod = require('../TimePeriod');
 require('../ExtraDate');
 require('../ExtraNumber');
 
@@ -11,7 +11,7 @@ exports['basic']= function(test) {
 	test.ok(t.isHourMinuteIn(9, 35));
 	test.ok(t.isHourMinuteIn(9, 30));
 	test.ok(t.isHourMinuteIn(9, 59));
-	test.ok(!t.isHourMinuteIn(10, 00));
+	test.ok(!t.isHourMinuteIn(10, 0));
 	test.ok(!t.isHourMinuteIn(9, 29));
 	
 	test.equal(t.firstMinute, 9*60+30);
@@ -23,12 +23,12 @@ exports['basic']= function(test) {
 	test.ok(t.isHourMinuteIn(9, 35));
 	test.ok(t.isHourMinuteIn(9, 30));
 	test.ok(t.isHourMinuteIn(9, 59));
-	test.ok(!t.isHourMinuteIn(10, 00));
+	test.ok(!t.isHourMinuteIn(10, 0));
 	test.ok(!t.isHourMinuteIn(10, 30));
 	test.ok(!t.isHourMinuteIn(9, 29));
-	test.ok(t.isHourMinuteIn(11, 00));
+	test.ok(t.isHourMinuteIn(11, 0));
 	test.ok(t.isHourMinuteIn(11, 59));
-	test.ok(!t.isHourMinuteIn(12, 00));
+	test.ok(!t.isHourMinuteIn(12, 0));
 	test.ok(!t.isHourMinuteIn(10, 59));
 	test.ok(t.isHourMinuteIn(13, 35));
 	test.ok(!t.isHourMinuteIn(13, 43));
@@ -46,7 +46,7 @@ exports['basic']= function(test) {
 	test.equal(t.lastMinute,  23*60+59);
 
 	test.done();
-}
+};
 
 exports['empty']= function(test) {
 	test.expect(13);
@@ -57,19 +57,19 @@ exports['empty']= function(test) {
 	test.ok(!t.isHourMinuteIn(9, 35));
 	test.ok(!t.isHourMinuteIn(9, 29));
 	test.ok(!t.isHourMinuteIn(15, 59));
-	test.ok(!t.isHourMinuteIn(16, 00));
+	test.ok(!t.isHourMinuteIn(16, 0));
 	
 	t = new TimePeriod();
 	test.ok(t.isValid);
 	test.ok(!t.isHourMinuteIn(9, 35));
 	test.ok(!t.isHourMinuteIn(9, 29));
 	test.ok(!t.isHourMinuteIn(15, 59));
-	test.ok(!t.isHourMinuteIn(16, 00));
+	test.ok(!t.isHourMinuteIn(16, 0));
 	
-	test.ok(!t.isHourMinuteIn(16, 00));
+	test.ok(!t.isHourMinuteIn(16, 0));
 	test.ok(!t.isUnixtimeIn(Date.unixtime()));
 	test.done();
-}
+};
 
 exports['hours']= function(test) {
 	test.expect(18);
@@ -91,14 +91,14 @@ exports['hours']= function(test) {
 	
 	t = new TimePeriod('9-13:30');
 	test.ok(t.isValid);
-	test.ok(t.isHourMinuteIn(9, 00));
+	test.ok(t.isHourMinuteIn(9, 0));
 	test.ok(t.isHourMinuteIn(13, 29));
 	test.ok(t.isHourMinuteIn(11, 23));
 	test.ok(!t.isHourMinuteIn(8, 59));
 	test.ok(!t.isHourMinuteIn(13, 30));
 	
 	test.done();
-}
+};
 
 exports['single hours']= function(test) {
 	test.expect(12);
@@ -108,20 +108,20 @@ exports['single hours']= function(test) {
 	test.ok(t.isValid);
 	test.ok(t.isHourMinuteIn(9, 0));
 	test.ok(t.isHourMinuteIn(9, 59));
-	test.ok(!t.isHourMinuteIn(10, 00));
+	test.ok(!t.isHourMinuteIn(10, 0));
 	
 	t = new TimePeriod('9,13,16');
 	test.ok(t.isValid);
 	test.ok(t.isHourMinuteIn(9, 0));
 	test.ok(t.isHourMinuteIn(9, 59));
-	test.ok(!t.isHourMinuteIn(10, 00));
+	test.ok(!t.isHourMinuteIn(10, 0));
 	test.ok(!t.isHourMinuteIn(12, 59));
 	test.ok(t.isHourMinuteIn(13, 23));
-	test.ok(!t.isHourMinuteIn(14, 00));
+	test.ok(!t.isHourMinuteIn(14, 0));
 	test.ok(!t.isHourMinuteIn(17, 0));
 	
 	test.done();
-}
+};
 
 exports['first and last minutes']= function(test) {
 	test.expect(6);
@@ -138,7 +138,7 @@ exports['first and last minutes']= function(test) {
 	test.equal(t.getLastMinute(), 16*60+30-1);
 	
 	test.done();
-}
+};
 
 exports['invalid']= function(test) {
 	test.expect(4);
@@ -157,7 +157,7 @@ exports['invalid']= function(test) {
 	test.ok(!t.isValid);
 	
 	test.done();
-}
+};
 
 exports['normalize']= function(test) {
 	test.expect(18);
@@ -200,7 +200,7 @@ exports['normalize']= function(test) {
 	test.equal(t.normalize(), "9:30-17");
 
 	test.done();
-}
+};
 
 
 exports['unixtime']= function(test) {
@@ -229,4 +229,4 @@ exports['unixtime']= function(test) {
 	_test();
 	
 	test.done();
-}
+};

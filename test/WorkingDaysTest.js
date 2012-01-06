@@ -1,6 +1,7 @@
-util = require('util');
+var 
+	util = require('util'),
+	WorkingDays = require('../WorkingDays');
 require('../ExtraDate');
-require('../WorkingDays');
 
 exports['check nyse working days'] = function(test) {
 	process.env.TZ='America/New_York';
@@ -27,7 +28,7 @@ exports['check nyse working days'] = function(test) {
 	test.ok(WorkingDays.isNyseHoliday(day));
 
 	test.done();
-}
+};
 
 exports['check nyse short days'] = function(test) {
 	process.env.TZ='America/New_York';
@@ -42,7 +43,7 @@ exports['check nyse short days'] = function(test) {
 	day = Date.parseDaystamp('20111125'); 
 	test.ok(WorkingDays.isNyseShortDay(day));
 	test.done();
-}
+};
 
 
 exports['check nyse prev/next day'] = function(test) {
@@ -73,4 +74,4 @@ exports['check nyse prev/next day'] = function(test) {
 	test.equal(WorkingDays.nextNyseDay(day).daystamp(), '20110919');
 	
 	test.done();
-}
+};

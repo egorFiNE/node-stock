@@ -1,6 +1,7 @@
-util = require('util');
-compress = require('compress-buffer').compress;
-uncompress = require('compress-buffer').uncompress;
+var 
+	util = require('util'),
+	compress = require('compress-buffer').compress,
+	uncompress = require('compress-buffer').uncompress;
 
 /** 
 
@@ -39,17 +40,18 @@ function MinuteIndex() {
 @private
  */
 MinuteIndex.prototype.resetIndex = function() {
-	for(var m=0;m<=1440;m++) {
+	var m;
+	for(m=0;m<=1440;m++) {
 		this.index[m]=null;
 	}
-}
+};
 
 /**
 @private
  */
 MinuteIndex.prototype.setStartUnixtime = function(unixtime) {
 	this._startUnixtime = unixtime;
-}
+};
 
 /**
 
@@ -67,7 +69,7 @@ MinuteIndex.prototype.dump = function(fromMinute, toMinute) {
 	for(i=fromMinute;i<=toMinute;i++) {
 		util.debug(util.format("%d: %s", i, util.inspect(this.index[i])));
 	}
-}
+};
 
 /**
 @private
@@ -115,14 +117,14 @@ MinuteIndex.prototype.addTick = function(position, unixtime, volume, price, isMa
 	} else { 
 		this.index[minute].l = Math.min(this.index[minute].l, price);
 	}
-}
+};
 
 /**
 @private
  */
 MinuteIndex.prototype.toGzip = function() {
 	return compress(new Buffer(JSON.stringify(this.index))); 
-}
+};
 
 /**
 @private
@@ -141,11 +143,11 @@ MinuteIndex.prototype.fromGzip = function(buffer) {
 	
 	try { 
 		this.index = JSON.parse(uncompressed.toString());
-	} catch (e) {
+	} catch (ee) {
 		return false;
 	}
 	
 	return true;
-}
+};
 
 module.exports = MinuteIndex;

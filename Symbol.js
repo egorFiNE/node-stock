@@ -1,5 +1,6 @@
-fs = require('fs');
-path = require('path');
+var 
+	fs = require('fs'),
+	path = require('path');
 
 /**
 
@@ -9,7 +10,7 @@ list of *.ticks files with handy access methods.
 @param {String} dbPath path to ticks database.
 @param {String} symbol symbol name, must be uppercase.
 
-Tick files list is generated from <code>dbPath/symbol/*.ticks</code>.
+Tick files list is generated from <code>*.ticks</code> in <code>dbPath/SYMBOL/</code>.
 
 Example: 
 
@@ -53,7 +54,7 @@ Symbol.prototype.setIsActive = function(isActive) {
 	} else { 
 		this.meta.isInactive = true;
 	}
-}
+};
 
 /**
 
@@ -63,7 +64,7 @@ Get active flag for the ticker.
 
 Symbol.prototype.isActive = function() {
 	return this.meta.isInactive ? false : true;
-}
+};
 
 /**
 
@@ -83,7 +84,7 @@ Symbol.prototype._loadMeta = function() {
 			this.meta = {};
 		}
 	}
-}
+};
 
 /**
 
@@ -93,7 +94,7 @@ Save updated information for the ticker. Now this is just the meta information t
 
 Symbol.prototype.save = function() {
 	this._saveMeta();
-}
+};
 
 /**
 
@@ -112,7 +113,7 @@ Symbol.prototype._saveMeta = function() {
 		fs.unlinkSync(this._metaFilename);
 	}
 	fs.renameSync(this._metaFilename+'.tmp', this._metaFilename);
-}
+};
 
 /** 
 
@@ -144,7 +145,7 @@ Symbol.prototype.load = function() {
 	}, this);
 	
 	return true;
-}
+};
 
 /** 
 
@@ -159,7 +160,7 @@ Callback function will receive one argument: the daystamp, string.
 
 Symbol.prototype.forEachDay = function(cb, context) {
 	this.days.forEach(cb, context);
-}
+};
 
 /** 
 
@@ -169,7 +170,7 @@ Rewind current iterator position to the beginning.
 
 Symbol.prototype.rewind = function() {
 	this.dayPosition=0;
-}
+};
 
 /** 
 
@@ -181,7 +182,7 @@ Get the next day from list of days.
 
 Symbol.prototype.nextDay = function() {
 	return this.days[this.dayPosition++];
-}
+};
 
 /** 
 
@@ -193,7 +194,7 @@ Get the first day from list of days.
 
 Symbol.prototype.firstDay = function() {
 	return this.days[0];
-}
+};
 
 /** 
 
@@ -205,7 +206,7 @@ Get the last day from list of days.
 
 Symbol.prototype.lastDay = function() {
 	return this.days[this.days.length-1];
-}
+};
 
 /** 
 
@@ -217,7 +218,7 @@ Get the count of available days.
 
 Symbol.prototype.count = function() {
 	return this.days.length;
-}
+};
 
 /** 
 
@@ -231,6 +232,6 @@ Check if this daystamp exists for this ticker.
 
 Symbol.prototype.dayExists = function(daystamp) {
 	return this.days.indexOf(daystamp)>=0;
-}
+};
 
 module.exports = Symbol;

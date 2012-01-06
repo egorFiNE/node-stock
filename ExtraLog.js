@@ -1,5 +1,6 @@
 require('./ExtraNumber');
 require('./ExtraDate');
+var util = require('util');
 
 /** 
 
@@ -7,13 +8,7 @@ Actually it's a printf substitute with support for prices and unixtimes. Contain
 
 */
 
-// trick doc.js into thinking that we have declared the class. 
-/*
-function ExtraLog() {
-}
-*/
-
-ExtraLog = {};
+function ExtraLog() {}
 
 var formatRegExp = /%[sdjpTD%]/g;
 
@@ -33,19 +28,11 @@ Example:
  */
 
 ExtraLog.format = function(f) {
-	if (typeof f !== 'string') {
-		var objects = [];
-		for (var i = 0; i < arguments.length; i++) {
-			objects.push(inspect(arguments[i]));
-		}
-		return objects.join(' ');
-	}
-
-	var i = 1;
+	var i=1, x;
 	var args = arguments;
 	var len = args.length;
 	var str = String(f).replace(formatRegExp, function(x) {
-		if (i >= len) return x;
+		if (i >= len) { return x; }
 		switch (x) {
 			case '%D':return Date.parseUnixtime(args[i++]).toFormat('YYYYMMDD');
 			case '%T':return Date.parseUnixtime(args[i++]).toFormat('HH24:MI:SS');
@@ -58,15 +45,15 @@ ExtraLog.format = function(f) {
 				return x;
 		}
 	});
-	for (var x = args[i]; i < len; x = args[++i]) {
+	for (x = args[i]; i < len; x = args[++i]) {
 		if (x === null || typeof x !== 'object') {
 			str += ' ' + x;
 		} else {
-			str += ' ' + inspect(x);
+			str += ' ' + util.inspect(x);
 		}
 	}
 	return str;
-}
+};
 
 /**
 
@@ -76,7 +63,7 @@ Similar to <code>console.log</code> but uses <code>ExtraLog.format()</code>.
 
 ExtraLog.log = function() {
 	process.stdout.write(ExtraLog.format.apply(this, arguments) + '\n');
-}
+};
 	
 module.exports = {
 	format: ExtraLog.format,

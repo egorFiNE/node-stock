@@ -7,12 +7,7 @@ See source code for holidays array.
 
 */
 
-/*
-function WorkingDays() {
-}
-*/
-
-WorkingDays = {};
+function WorkingDays() {}
 
 WorkingDays.nyseHolidays = {
 	2010: {
@@ -55,7 +50,7 @@ WorkingDays.nyseHolidays = {
 		11: [28],
 		12: [25]
 	}
-}
+};
 
 WorkingDays.nyseShortDays = {
 	2011: {
@@ -81,7 +76,7 @@ WorkingDays.isNyseShortDay = function(day) {
 		}
 	}
 	return false;
-}
+};
 
 /** 
 
@@ -101,7 +96,7 @@ WorkingDays.isNyseHoliday = function(day) {
 		}
 	}
 	return false;
-}
+};
 
 /** 
 
@@ -116,7 +111,7 @@ Check if a given date is a Sunday or Saturday.
 WorkingDays.isWeekend = function(day) {
 	var _d = day.getDay();
 	return (_d == 6 || _d==0);
-}
+};
 
 /* 
 
@@ -130,7 +125,7 @@ Check if the given date is a trading day at NYSE.
 
 WorkingDays.isNyseWorkingDay = function(day) {
 	return (!WorkingDays.isNyseHoliday(day) && !WorkingDays.isWeekend(day));
-}
+};
 
 /** 
 
@@ -149,7 +144,7 @@ WorkingDays.prevNyseDay = function(day) {
 		nextDate.addDays(-1);
 	}
 	return nextDate;
-}
+};
 
 /** 
 
@@ -168,6 +163,6 @@ WorkingDays.nextNyseDay = function(day) {
 		nextDate.addDays(1);
 	}
 	return nextDate;
-}
+};
 
 module.exports = WorkingDays;

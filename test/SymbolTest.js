@@ -1,6 +1,7 @@
-util = require('util');
-fs = require('fs');
-Symbol = require('../Symbol');
+var 
+	util = require('util'),
+	fs = require('fs'),
+	Symbol = require('../Symbol');
 
 exports['basic']= function(test) {
 	test.expect(11);
@@ -22,7 +23,7 @@ exports['basic']= function(test) {
 	test.equal(symbol.nextDay(), '20110201');
 	
 	test.done();
-}
+};
 
 exports['meta']= function(test) {
 	test.expect(6);
@@ -47,7 +48,7 @@ exports['meta']= function(test) {
 	fs.unlinkSync('/tmp/DDDD/meta.json');
 	fs.rmdirSync('/tmp/DDDD/');
 	test.done();
-}
+};
 
 
 exports['nonexisting']= function(test) {
@@ -63,4 +64,4 @@ exports['nonexisting']= function(test) {
 	test.equal(symbol.nextDay(), null);
 	test.ok(!symbol.dayExists('20110201'));
 	test.done();
-}
+};

@@ -1,6 +1,7 @@
-util = require('util');
-fs = require('fs');
-Symbols = require('../Symbols');
+var 
+	util = require('util'),
+	fs = require('fs'),
+	Symbols = require('../Symbols');
 
 exports['basic']= function(test) {
 	test.expect(8);
@@ -18,7 +19,7 @@ exports['basic']= function(test) {
 	test.equal(symbols.next().symbol, 'AAA');
 	
 	test.done();
-}
+};
 
 exports['nonexisting']= function(test) {
 	test.expect(1);
@@ -26,4 +27,4 @@ exports['nonexisting']= function(test) {
 	var symbols = new Symbols(__dirname+'/data/doesntexists');
 	test.ok(!symbols.load());
 	test.done();
-}
+};

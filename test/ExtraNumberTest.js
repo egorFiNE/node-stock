@@ -7,7 +7,7 @@ exports['number pad'] = function(test) {
 	test.equal((23).pad(2), "23");
 	test.equal((23).pad(1), "23");
 	test.done();
-}
+};
 
 exports['check float errors'] = function(test) {
 	test.expect(2);
@@ -36,9 +36,9 @@ exports['check float errors'] = function(test) {
 exports['human-readable number'] = function(test) {
 	test.equal(parseInt(23.34*10000).humanReadablePrice(), "23.34");
 	test.done();
-}
+};
 
 exports['human-readable order'] = function(test) {
 	test.equal((9300000).humanReadableOrder(), "9.3m");
 	test.done();
-}
+};

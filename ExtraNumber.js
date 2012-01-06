@@ -25,7 +25,7 @@ Example:
  */
 Number.prototype.humanReadablePrice = function() {
 	return (this/10000).toFixed(2);
-}
+};
 
 /**
 
@@ -47,8 +47,8 @@ Number.prototype.pad = function(length) {
 		return _num;
 	}
 	
-  return (Array(length).join('0') + this).slice(-length);
-}
+  return (new Array(length).join('0') + this).slice(-length);
+};
 
 /**
 
@@ -75,5 +75,5 @@ Number.prototype.humanReadableOrder = function() {
 		return (this/1000).toFixed(1)+'k';
 	}
 	
-	return this+'';
-}
+	return this.toString();
+};

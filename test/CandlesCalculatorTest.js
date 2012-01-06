@@ -1,9 +1,11 @@
-fs = require('fs');
-util = require('util');
+var 
+	fs = require('fs'),
+	util = require('util'),
+	TickStorage = require('../TickStorage'),
+	CandlesCalculator = require('../CandlesCalculator');
+	
 require('../ExtraDate');
 require('../ExtraNumber');
-TickStorage = require('../TickStorage');
-CandlesCalculator = require('../CandlesCalculator');
 
 process.env.TZ='America/New_York';
 
@@ -33,5 +35,5 @@ exports['holes'] = function(test) {
 //	candles.dumpCandles(600, 620);
 	
 	test.done();
-}
+};
 

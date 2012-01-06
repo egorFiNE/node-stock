@@ -61,9 +61,9 @@ function TimePeriod(str) {
 	this._baseUnixtime=0;
 }
 
-module.exports = TimePeriod; 
-
 TimePeriod.prototype._parse = function() {
+	var i, m;
+	
 	this.isValid=true;
 	this._periods=[];
 
@@ -71,12 +71,11 @@ TimePeriod.prototype._parse = function() {
 	this.lastMinute=null;
 
 	var periods = this._periodString.split(',');
-	var i=0;
 	for(i=0;i<periods.length;i++) {
 		this._parseSinglePeriod(periods[i]);
 	}
 	
-	for(var m=0;m<1440;m++) {
+	for(m=0;m<1440;m++) {
 		if (this._periods[m]) {
 			if (this.firstMinute==null) {
 				this.firstMinute=m;
@@ -84,13 +83,13 @@ TimePeriod.prototype._parse = function() {
 			this.lastMinute=m;
 		}
 	}
-}
+};
 
 TimePeriod.prototype._setUnixtime  = function(unixtime) {
 	var d = Date.parseUnixtime(unixtime);
 	d.clearTime();
 	this._baseUnixtime = d.unixtime();
-}
+};
 
 /** 
 
@@ -114,7 +113,7 @@ TimePeriod.prototype.isUnixtimeIn = function(unixtime) {
 	var seconds = unixtime - this._baseUnixtime;
 	var minute = parseInt(seconds/60);
 	return this.isMinuteIn(minute);
-}
+};
 
 TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 	if (periodString.match(/-$/)) {
@@ -138,7 +137,7 @@ TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 		return;
 	}
 
-	if (endMinute===NaN || startMinute===NaN) {
+	if (isNaN(endMinute) || isNaN(startMinute)) {
 		this.isValid=false;
 		return;
 	}
@@ -152,7 +151,7 @@ TimePeriod.prototype._parseSinglePeriod = function(periodString) {
 	for(i=startMinute;i<endMinute;i++) {
 		this._periods[i]=true;
 	}
-}
+};
 
 /** 
 
@@ -166,7 +165,7 @@ Check if given date matches the period.
 
 TimePeriod.prototype.isDateIn = function(date) {
 	return this.isHourMinuteIn(date.getHours(), date.getMinutes());
-}
+};
 
 /** 
 
@@ -180,8 +179,8 @@ Check if given hour and minute matches the period.
  */
 
 TimePeriod.prototype.isHourMinuteIn = function(hour,minute) {
-	return this.isMinuteIn(hour*60+minute*1);
-}
+	return this.isMinuteIn(hour*60+minute);
+};
 
 /** 
 
@@ -196,7 +195,7 @@ so 9:45 becomes 9*60+45=585.
 
 TimePeriod.prototype.isMinuteIn = function(minute) {
 	return this._periods[minute];
-}
+};
 
 /** 
 
@@ -215,7 +214,7 @@ TimePeriod.prototype.getFirstMinute = function() {
 	}
 	
 	return 0;
-}
+};
 
 /** 
 
@@ -233,8 +232,8 @@ TimePeriod.prototype.getLastMinute = function() {
 			lastMinute = i;
 		}
 	}
-	return lastMinute==null?1339:lastMinute
-}
+	return lastMinute==null?1339:lastMinute;
+};
 
 /**
 
@@ -253,7 +252,7 @@ Example:
 
 TimePeriod.prototype.setMinute = function(m, enabled) {
 	this._periods[m] = enabled? true: false;
-}
+};
 
 /** 
 
@@ -268,13 +267,13 @@ TimePeriod.prototype.normalize = function() {
 		return '';
 	}
 	
-	var firstMinute = this.getFirstMinute();
-	var lastMinute = this.getLastMinute();
+	var 
+		firstMinute = this.getFirstMinute(),
+		lastMinute = this.getLastMinute(),
+		_periods=[],
+		_periodsStrings=[],
+		currentPeriodOpen, m;
 	
-	var _periods=[];
-	
-	var currentPeriodOpen=undefined;
-	var m;
 	for(m=firstMinute;m<=lastMinute;m++) {
 		if (this._periods[m]) {
 			if (!currentPeriodOpen) {
@@ -291,12 +290,11 @@ TimePeriod.prototype.normalize = function() {
 		_periods.push([currentPeriodOpen, lastMinute]);
 	}
 	
-	var _periodsStrings=[];
 	_periods.forEach(function(period) {
 		_periodsStrings.push(TimePeriod.minuteToTime(period[0])+"-"+TimePeriod.minuteToTime(period[1]+1));
 	});
 	return _periodsStrings.join(',').replace(/:00/g,'');
-}
+};
 
 /**
 
@@ -326,8 +324,8 @@ TimePeriod.timeToMinute = function(timeString) {
 		return undefined;
 	}
 	
-	return times[0]*60+times[1]*1;
-}
+	return times[0]*60+times[1];
+};
 
 /**
 
@@ -341,4 +339,6 @@ Helper function. Will return time string for day minute.
 
 TimePeriod.minuteToTime = function(m) {
 	return parseInt(m/60) + ':' +(parseInt(m%60)).pad(2);
-}
+};
+
+module.exports = TimePeriod; 

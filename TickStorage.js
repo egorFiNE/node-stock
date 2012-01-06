@@ -1,11 +1,13 @@
-util = require('util');
-fs = require('fs');
-path = require('path');
-events = require('events');
+var 
+	util = require('util'),
+	fs = require('fs'),
+	path = require('path'),
+	events = require('events'),
+	compress = require('compress-buffer').compress,
+	uncompress = require('compress-buffer').uncompress,
+	MinuteIndex = require('./MinuteIndex');
+	
 require('./ExtraDate');
-compress = require('compress-buffer').compress;
-uncompress = require('compress-buffer').uncompress;
-MinuteIndex = require('./MinuteIndex');
 
 /** 
 
@@ -131,7 +133,7 @@ TickStorage.prototype.filterMarketTime = function() {
 	}
 	
 	this.nextTick = this._nextTickMarket;
-}
+};
 
 /**
 
@@ -142,7 +144,7 @@ Returns symbol name.
  */
 TickStorage.prototype.getSymbol = function() {
 	return this._symbol;
-}
+};
 
 /**
 
@@ -153,7 +155,7 @@ Return true if this file exists in tick database.
  */
 TickStorage.prototype.exists = function() {
 	return path.existsSync(this._path+this._filename);
-}
+};
 
 /** 
 
@@ -163,14 +165,14 @@ Will return the day minute to which the current position points to.
 
  */
 TickStorage.prototype.tellMinute = function() {
-	var _m=null;
-	for (var m=0;m<1440;m++) {
+	var _m=null,m;
+	for (m=0;m<1440;m++) {
 		if (this.minuteIndex.index[m] && this.position>=this.minuteIndex.index[m].o	) {
 			_m = m;
 		}
 	}
 	return _m;
-}
+};
 
 /**
 
@@ -189,7 +191,7 @@ TickStorage.prototype.seekToMinute = function(minute) {
 	} else { 
 		return false;
 	}
-}
+};
 
 
 /** 
@@ -202,7 +204,7 @@ Seek to the first tick.
 
 TickStorage.prototype.rewind = function() {
 	return this.seek(0, TickStorage.SEEK_SET);
-}
+};
 
 /** 
 
@@ -253,7 +255,7 @@ TickStorage.prototype.seek = function(ticks, whence) {
 	this.position = newPosition;
 	
 	return this.position;
-}
+};
 
 TickStorage.prototype._possiblyCreatePath = function() {
 	if (!path.existsSync(this._path)) { 
@@ -264,7 +266,7 @@ TickStorage.prototype._possiblyCreatePath = function() {
 		}
 	}
 	return true;
-}
+};
 
 /**
 
@@ -310,11 +312,13 @@ TickStorage.prototype.save = function(quick) {
 		
 		var fd = fs.openSync(this._path+this._filename+".tmp", "w");
 		
+		var bufferHeader;
+		
 		if (this.count>0) {
 			var bytesLength = this.count*TickStorage.ENTRY_SIZE;
 			
 			var bufferCompressed = compress(this._bufferData.slice(0, bytesLength));
-			var bufferHeader = this._generateHeader(fd, header);
+			bufferHeader = this._generateHeader(header);
 			
 			var targetBuffer = new Buffer(bufferHeader.length + bufferMinuteIndex.length + bufferCompressed.length);
 			bufferHeader.copy(targetBuffer);
@@ -326,7 +330,7 @@ TickStorage.prototype.save = function(quick) {
 			// despite that it exists it's not stored, so do not confuse
 			// any software with it's fake size
 			header.minuteIndexSize = 0; 
-			var bufferHeader = this._generateHeader(fd, header);
+			bufferHeader = this._generateHeader(header);
 			fs.writeSync(fd, bufferHeader, 0, bufferHeader.length);
 		}
 		fs.closeSync(fd);
@@ -341,20 +345,20 @@ TickStorage.prototype.save = function(quick) {
 
 		try { 
 			fs.renameSync(this._path+this._filename+".tmp", this._path+this._filename);
-		} catch (e) {
+		} catch (ee) {
 			return false;
 		}
 	}
 	
 	return true;
-}
+};
 
-TickStorage.prototype._generateHeader = function(fd, header) {
+TickStorage.prototype._generateHeader = function(header) {
 	var bufHeader = new Buffer(TickStorage.HEADER_SIZE);
 	bufHeader.fill(0);
 	bufHeader.write(JSON.stringify(header)+"\n",0,'ascii');
 	return bufHeader; 
-}
+};
 
 /**
 
@@ -367,7 +371,7 @@ TickStorage.prototype.remove = function() {
 		fs.unlinkSync(this._path+this._filename);
 	} catch(e) {
 	}
-}
+};
 
 /**
 
@@ -415,19 +419,20 @@ TickStorage.prototype.load = function() {
 	
 	try { 
 		this._bufferData = uncompress(buffer);
-	} catch (e) { 
+	} catch (ee) { 
 		return false;
 	}
+	
 	delete buffer;
 	
 	return this._bufferData ? true : false;
-}
+};
 
 TickStorage.prototype._loadMinuteIndex = function(fd, minuteIndexSize) {
 	var compressedMinuteIndex = new Buffer(minuteIndexSize); 
 	fs.readSync(fd, compressedMinuteIndex, 0, minuteIndexSize, TickStorage.HEADER_SIZE);
 	return compressedMinuteIndex;
-}
+};
 
 TickStorage.prototype._loadHeader = function(fd) {
 	try {
@@ -453,7 +458,7 @@ TickStorage.prototype._loadHeader = function(fd) {
 	} catch (e) {
 		return null;
 	}
-}
+};
 
 /** 
 
@@ -485,7 +490,7 @@ TickStorage.prototype.prepareForNew = function(megs) {
 	this.additionalData={};
 	
 	this._orphanTicks=[];
-}
+};
 
 /** 
 
@@ -519,10 +524,10 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disa
 	}
 	
 	if (!disableOrphanLogic && unixtime < this._lastUnixtime-600) {
-		var found = this._findPositionOfPreviousTickWithCloseUnixtime(unixtime);
+		var found = this._findPositionOfPreviousTickWithCloseUnixtime(unixtime), z;
 		
 		if (found!=null) {
-			for(var z=found+1;z<this.position;z++) {
+			for(z=found+1;z<this.position;z++) {
 				this._orphanTicks.push(this.tickAtPosition(z));
 			}
 			
@@ -556,35 +561,38 @@ TickStorage.prototype.addTick = function(unixtime, volume, price, isMarket, disa
 
 	this.position++;
 	this.count++;
-}
+};
 
 TickStorage.prototype._possiblyAppendAdditionalTicks = function() {
-	for (var p=0;p<this._orphanTicks.length;p++) {
-		var tick = this._orphanTicks[p];
+	var tick, p;
+	for (p=0;p<this._orphanTicks.length;p++) {
+		tick = this._orphanTicks[p];
 		if (tick && tick.unixtime<this._lastUnixtime) {
 			this.addTick(tick.unixtime, tick.volume, tick.price, tick.isMarket, true);
 			this._orphanTicks[p] = null;
 		}
 	}
-}
+};
 
 TickStorage.prototype._findPositionOfPreviousTickWithCloseUnixtime = function(unixtime) {
-	for (var pos=this.position-1;pos>=this.position-5;pos--) {
-		var _tick = this.tickAtPosition(pos);
+	var _tick, pos;
+	for (pos=this.position-1;pos>=this.position-5;pos--) {
+		_tick = this.tickAtPosition(pos);
 		if (_tick && Math.abs(_tick.unixtime - unixtime) < 10) { 
 			return pos;
 		}
 	}
 	return null;
-}
+};
 
 TickStorage.prototype._generateMinuteIndex = function() {
+	var tick, pos;
 	this.minuteIndex.resetIndex();
-	for (var pos=0;pos<this.count;pos++) {
-		var tick = this.tickAtPosition(pos);
+	for (pos=0;pos<this.count;pos++) {
+		tick = this.tickAtPosition(pos);
 		this.minuteIndex.addTick(pos, tick.unixtime, tick.volume, tick.price, tick.isMarket);
 	}
-}
+};
 
 /**
 
@@ -603,7 +611,7 @@ TickStorage.prototype.dumpOrphanTicks = function() {
 			);
 		}
 	}, this);
-}
+};
 
 TickStorage.prototype._compressAdditionalTicks = function() {
 	var lastEntry = JSON.stringify(this._orphanTicks[0]);
@@ -617,7 +625,7 @@ TickStorage.prototype._compressAdditionalTicks = function() {
 	}, this);
 	
 	this._orphanTicks = clearPool;
-}
+};
 
 /** 
 
@@ -635,7 +643,7 @@ TickStorage.prototype.tickAtPosition = function(position) {
 	}
 	
 	return this._tickAtOffset(position*TickStorage.ENTRY_SIZE);
-}
+};
 
 TickStorage.prototype._tickAtOffset = function(offset) { 
 	if (!this._bufferData || offset>=this._bufferData.length || offset < 0) { 
@@ -647,12 +655,12 @@ TickStorage.prototype._tickAtOffset = function(offset) {
 		volume: this._bufferData.readUInt32LE(offset+4),
 		price: this._bufferData.readUInt32LE(offset+8), 
 		isMarket: this._bufferData.readUInt8(offset+12) == 1 
-	}
-}
+	};
+};
 
 TickStorage.prototype._nextTickAll = function() { 
 	return this._tickAtOffset(this.position++*TickStorage.ENTRY_SIZE);
-}
+};
 
 TickStorage.prototype._nextTickMarket = function() { 
 	var tick;
@@ -664,7 +672,7 @@ TickStorage.prototype._nextTickMarket = function() {
 		return null;
 	}
 	return tick;
-}
+};
 
 /**
 

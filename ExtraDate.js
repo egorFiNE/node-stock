@@ -1,5 +1,9 @@
 require('date-utils');
 
+function _zeroStrip(s) {
+	return s.toString().replace(/^0+/, '');
+}
+
 /** 
 
 Various date methods useful for stock trading. 
@@ -16,7 +20,7 @@ be specified both in string or integer and all the methods and functions must ac
 // trick doc.js into thinking that we have declared the Date class. 
 /*
 function Date() {
-}
+};
 */
 
 /** 
@@ -38,7 +42,7 @@ Date.parseDaystamp = function(daystamp) {
 
 	m--;
 	return new Date(y,m,d);
-}
+};
 
 /** 
 
@@ -50,7 +54,7 @@ Return daystamp representation of a Date.
 
 Date.prototype.daystamp = function() {
 	return this.toFormat('YYYYMMDD');
-}
+};
 
 /** 
 
@@ -64,7 +68,7 @@ Parse unixtime into Date. It's a factory method.
 
 Date.parseUnixtime = function(unixtime) {
 	return new Date(unixtime*1000);
-}
+};
 
 /** 
 
@@ -75,8 +79,8 @@ Return unixtime representation of a Date.
  */
 
 Date.prototype.unixtime = function() {
-	return this.getTime()/1000 >> 0;
-}
+	return parseInt(this.getTime()/1000);
+};
 
 /** 
 
@@ -88,7 +92,7 @@ Return current unixtime.
 
 Date.unixtime = function() {
 	return new Date().unixtime();
-}
+};
 
 /**
 
@@ -142,7 +146,7 @@ Date.fillEmptyDays = function(from, to) {
 	}
 
 	return result;
-}
+};
 
 /** 
 
@@ -154,7 +158,7 @@ Get short human readable day name for given Date, like "Sun", "Mon", ...
 
 Date.prototype.getDayName = function() {
 	return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][this.getDay()];
-}
+};
 
 /** 
 
@@ -169,7 +173,7 @@ Date.prototype.setCurrentDayMinute = function(minute) {
 	var hours = Math.floor(minute/60);
 	var minutes = minute-hours*60;
 	this.setHours(hours, minutes, 0, 0);
-}
+};
 
 /** 
 
@@ -182,7 +186,7 @@ e.g. 570 for 9:30.
 
 Date.prototype.getCurrentDayMinute = function() {
 	return this.getHours()*60 + this.getMinutes();
-}
+};
 
 /** 
 
@@ -203,9 +207,5 @@ Date.minuteToFormat = function(minute, format) {
 	var d = new Date();
 	d.setCurrentDayMinute(minute);
 	return d.toFormat(format);
-}
-
-function _zeroStrip(s) {
-	return s.toString().replace(/^0+/, '');
-}
+};
 
