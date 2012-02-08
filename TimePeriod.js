@@ -316,10 +316,16 @@ TimePeriod.timeToMinute = function(timeString) {
 	}
 	
 	var times = timeString.split(':');
-	
+
+	// make sure it is not an octal number
+	times[0] = times[0].replace(/^\0+/, '');
+	if (times[1]) {
+		times[1] = times[1].replace(/^\0+/, '');
+	}
+
 	times[0] = parseInt(times[0]);
 	times[1] = parseInt(times[1] || 0);
-	
+
 	if (times[1]>59) { 
 		return undefined;
 	}
@@ -338,6 +344,8 @@ Helper function. Will return time string for day minute.
 */
 
 TimePeriod.minuteToTime = function(m) {
+	// just to make sure it is not an octal number
+	m = parseInt(m.toString().replace(/^\0+/, ''));
 	return parseInt(m/60) + ':' +(parseInt(m%60)).pad(2);
 };
 
