@@ -4,7 +4,7 @@ An extremely fast and efficient **[Node.js](http://nodejs.org)** storage engine 
 
 **node-stock** is used by my proprietary blackbox trading company for all our robots. The code has been in production for more than a year now, so it is considered mature.
 
-The code is well unit-tested.
+The code is well coverted by unit tests.
 
 # Modules
 
@@ -25,7 +25,7 @@ The main thing: a tick storage engine.
 
 ## Price format
 
-All prices in **node-stock** and derived software are stored in integer in 1/100 of a cent. I.e. $23,45 becomes 234500. To convert a conventional price to this format, use <code>parseInt(price*10000)</code>. To show a human-readable version, use <code>Number.humanReadablePrice()</code> in **ExtraNumber**: 
+All prices in **node-stock** and derived software are stored in integer in 1/100 of a cent. I.e. $23,45 becomes 234500. To convert a conventional price to this format, use `parseInt(price*10000)`. To show a human-readable version, use <code>Number.humanReadablePrice()</code> in **ExtraNumber**: 
 
 ```javascript
 require('stock/ExtraNumber');
@@ -96,7 +96,7 @@ A: It's not. If you actually start developing your own ticks database you will i
 
 A: Unfortunately, no. My license doesn't allow reselling of tick data. However if you need some tick data **strictly** for R&D - please get in touch with me by email, we can work something out. 
 
-**However,** I have made one particular NYSE ticker and one NASDAQ ticker publicly available so that you can play around with data. Should be enough for basic testing and development. They are anonymized but the data is correct and intact; please don't try to figure out which company it is. You can find nyse.zip and nasdaq.zip at Downloads area at Github. 
+**However,** I have made one particular NYSE ticker publicly available so that you can play around with data. Should be enough for basic testing and development. It's anonymized but the data is correct and intact; please don't try to figure out which company it is. You can find nyse.zip in Downloads area at Github. 
 
 ## Q: Augmentation of built-in classes?! You moron!
 
