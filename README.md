@@ -94,15 +94,15 @@ A: It's not. If you actually start developing your own ticks database you will i
 
 ## Q: Can you sell me raw ticks database for XXX or ZZZ?
 
-A: Unfortunately, no. My license doesn't allow reselling of tick data. However if you need some tick data **strictly** for R&D - please get in touch with me by email, we can work something out. 
+A: Unfortunately, no. My license doesn't allow reselling of tick data. However, if you need some tick data **strictly** for R&D - please get in touch with me by email, we can work something out. 
 
-**However,** I have made one particular NYSE ticker publicly available so that you can play around with data. Should be enough for basic testing and development. It's anonymized but the data is correct and intact; please don't try to figure out which company it is. You can find nyse.zip in Downloads area at Github. 
+**However,** I have made one particular NYSE ticker publicly available so that you can play around with data. Should be enough for basic testing and development. It's anonymized, but the data is correct and intact; please don't try to figure out which company it is. You can find nyse.zip in Downloads area at Github. 
 
 ## Q: Augmentation of built-in classes?! You moron!
 
 **node-stock** adds methods to <code>Date</code> (see **ExtraDate**) and <code>Number</code> (see **ExtraNumber**).
 
-This practice is wrong. Please do not inherit it in your project. There are only *extremely* rare cases when it's okay to do so and I consider these two modules an example of those. 
+This practice is wrong. Please do not inherit it in your project. There are only *extremely* rare cases when it's okay to do so, and I consider these two modules an example of those. 
 
 ## Q: How do I run unit tests?
 
