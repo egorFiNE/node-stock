@@ -37,7 +37,7 @@ Load list of tickers from the database. Essentially will load all directory name
  */
 
 Symbols.prototype.load = function() {
-	if (!path.existsSync(this.dbPath)) {
+	if (!fs.existsSync(this.dbPath)) {
 		return false;
 	}
 	
