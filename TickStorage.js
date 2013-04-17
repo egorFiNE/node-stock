@@ -154,7 +154,7 @@ Return true if this file exists in tick database.
 
  */
 TickStorage.prototype.exists = function() {
-	return path.existsSync(this._path+this._filename);
+	return fs.existsSync(this._path+this._filename);
 };
 
 /** 
@@ -258,7 +258,7 @@ TickStorage.prototype.seek = function(ticks, whence) {
 };
 
 TickStorage.prototype._possiblyCreatePath = function() {
-	if (!path.existsSync(this._path)) { 
+	if (!fs.existsSync(this._path)) { 
 		try {
 			fs.mkdirSync(this._path, 0755);
 		} catch (e) {
@@ -335,7 +335,7 @@ TickStorage.prototype.save = function(quick) {
 		}
 		fs.closeSync(fd);
 
-		if (path.existsSync(this._path+this._filename)) {
+		if (fs.existsSync(this._path+this._filename)) {
 			try {
 				fs.unlinkSync(this._path+this._filename);
 			} catch (e) {

@@ -1,7 +1,7 @@
 {
 	"name": "stock",
 	"description": "A fast and efficient Node.js storage engine for stock market tick data and couple of modules for trading software development.",
-	"version": "0.0.9",
+	"version": "0.0.10",
 	"author": "Egor Egorov <me@egorfine.com>",
 	"homepage": "http://egorfine.github.com/node-stock",
 	"bugs": { 

@@ -74,7 +74,7 @@ Load meta information from <code>dbPath/symbol/meta.json</code>.
 
 
 Symbol.prototype._loadMeta = function() {
-	if (path.existsSync(this._metaFilename)) {
+	if (fs.existsSync(this._metaFilename)) {
 		try {
 			var data = fs.readFileSync(this._metaFilename);
 			data = data.toString();
@@ -109,7 +109,7 @@ Symbol.prototype._saveMeta = function() {
 	
 	var data = JSON.stringify(this.meta);
 	fs.writeFileSync(this._metaFilename+'.tmp', data);
-	if (path.existsSync(this._metaFilename)) {
+	if (fs.existsSync(this._metaFilename)) {
 		fs.unlinkSync(this._metaFilename);
 	}
 	fs.renameSync(this._metaFilename+'.tmp', this._metaFilename);
@@ -130,7 +130,7 @@ Symbol.prototype.load = function() {
 	this.days=[];
 	this.dayPosition=0;
 	
-	if (!path.existsSync(this.dirPath)) {
+	if (!fs.existsSync(this.dirPath)) {
 		return false;
 	}
 	

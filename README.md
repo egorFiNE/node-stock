@@ -72,7 +72,7 @@ ExtraLog.log("Hello at %D", Date.unixtime());
 
 # Requirements
 
-* **Node.js** &gt;= 0.6.0; s
+* **Node.js** &gt;= 0.10.0; s
 * **node-date-utils** https://github.com/JerrySievert/node-date-utils or <code>npm install date-utils</code>;
 * **node-compress-buffer** https://github.com/egorFiNE/node-compress-buffer or <code>npm install compress-buffer</code>;
 * **optimist** https://github.com/substack/node-optimist.git or <code>npm install optimist</code>; 
