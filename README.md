@@ -1,3 +1,7 @@
+# ABANDONED 
+
+This software was created in the era of node v0.2, so by modern times it is completelly and utterly ancient. This code is only left around as a description for the files format which is straightforward to read/write in any progamming language of your choice. 
+
 # node-stock
 
 An extremely fast and efficient **[Node.js](http://nodejs.org)** storage engine for raw stock market tick data as well as a couple of handy modules for trading software development.  
