@@ -3,8 +3,7 @@ var
 	fs = require('fs'),
 	path = require('path'),
 	events = require('events'),
-	compress = require('compress-buffer').compress,
-	uncompress = require('compress-buffer').uncompress,
+	zlib = require('zlib'),
 	MinuteIndex = require('./MinuteIndex');
 	
 require('./ExtraDate');
@@ -317,7 +316,7 @@ TickStorage.prototype.save = function(quick) {
 		if (this.count>0) {
 			var bytesLength = this.count*TickStorage.ENTRY_SIZE;
 			
-			var bufferCompressed = compress(this._bufferData.slice(0, bytesLength));
+			var bufferCompressed = zlib.deflateSync(this._bufferData.slice(0, bytesLength));
 			bufferHeader = this._generateHeader(header);
 			
 			var targetBuffer = new Buffer(bufferHeader.length + bufferMinuteIndex.length + bufferCompressed.length);
@@ -418,7 +417,7 @@ TickStorage.prototype.load = function() {
 	fs.closeSync(fd);
 	
 	try { 
-		this._bufferData = uncompress(buffer);
+		this._bufferData = zlib.inflateSync(buffer);
 	} catch (ee) { 
 		return false;
 	}

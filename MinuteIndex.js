@@ -1,7 +1,6 @@
 var 
 	util = require('util'),
-	compress = require('compress-buffer').compress,
-	uncompress = require('compress-buffer').uncompress;
+	zlib = require('zlib');
 
 /** 
 
@@ -123,7 +122,7 @@ MinuteIndex.prototype.addTick = function(position, unixtime, volume, price, isMa
 @private
  */
 MinuteIndex.prototype.toGzip = function() {
-	return compress(new Buffer(JSON.stringify(this.index))); 
+	return zlib.deflateSync(new Buffer(JSON.stringify(this.index))); 
 };
 
 /**
@@ -132,7 +131,7 @@ MinuteIndex.prototype.toGzip = function() {
 MinuteIndex.prototype.fromGzip = function(buffer) {
 	var uncompressed;
 	try { 
-		uncompressed = uncompress(buffer);
+		uncompressed = zlib.inflateSync(buffer);
 	} catch (e) { 
 		return false;
 	}
